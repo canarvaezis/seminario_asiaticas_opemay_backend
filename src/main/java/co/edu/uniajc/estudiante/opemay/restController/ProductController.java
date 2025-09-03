@@ -1,5 +1,8 @@
 package co.edu.uniajc.estudiante.opemay.restController;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,4 +23,10 @@ public class ProductController {
     public Product saveProduct(@RequestBody Product product) {
         return productService.createProduct(product);
     }
+
+    @GetMapping(path = "/all")
+    public List<Product> getAllProducts() {
+        return productService.getAllProducts();
+    }
 }
+ 
