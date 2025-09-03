@@ -139,5 +139,5 @@ public class UserService {
         } catch (Exception e) {
             log.error("Error actualizando último login: {}", e.getMessage());
         }
-    }
+    } 
 }
