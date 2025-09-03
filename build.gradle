@@ -32,6 +32,12 @@ dependencies {
 	// Spring Boot Starters
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 	
 	// Circuit Breaker y Resilience4j
 	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
@@ -65,4 +71,17 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.named('bootRun') {
+	jvmArgs = [
+		'--add-opens=java.base/java.time=ALL-UNNAMED',
+		'--add-opens=java.base/java.time.chrono=ALL-UNNAMED',
+		'--add-opens=java.base/java.time.format=ALL-UNNAMED',
+		'--add-opens=java.base/java.time.temporal=ALL-UNNAMED',
+		'--add-opens=java.base/java.time.zone=ALL-UNNAMED',
+		'--add-opens=java.base/java.util=ALL-UNNAMED',
+		'--add-opens=java.base/java.lang=ALL-UNNAMED',
+		'--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
+	]
 }

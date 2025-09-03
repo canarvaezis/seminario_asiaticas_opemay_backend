@@ -1,6 +1,6 @@
 package co.edu.uniajc.estudiante.opemay.Service;
 
-import java.time.LocalDateTime;
+import com.google.cloud.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +39,7 @@ public class ProductService {
             product.setId(productId);
             
             // Actualizar timestamp
-            product.setUpdatedAt(LocalDateTime.now());
+            product.setUpdatedAt(Timestamp.now());
             
             // Guardar en la colección "products"
             ApiFuture<WriteResult> future = firestore.collection("products")
@@ -63,8 +63,15 @@ public class ProductService {
             List<QueryDocumentSnapshot> documents = future.get().getDocuments();
             
             for (QueryDocumentSnapshot doc : documents) {
-                Product product = doc.toObject(Product.class);
-                products.add(product);
+                try {
+                    Product product = convertDocumentToProduct(doc);
+                    if (product != null) {
+                        products.add(product);
+                    }
+                } catch (Exception e) {
+                    log.error("Error convirtiendo documento a Product: {}", e.getMessage());
+                    // Continuar con el siguiente documento
+                }
             }
             
             log.info("Se obtuvieron {} productos", products.size());
@@ -85,9 +92,18 @@ public class ProductService {
             com.google.cloud.firestore.DocumentSnapshot document = future.get();
             
             if (document.exists()) {
-                Product product = document.toObject(Product.class);
-                log.info("Producto encontrado: {}", product.getName());
-                return product;
+                try {
+                    Product product = convertDocumentSnapshotToProduct(document);
+                    if (product != null) {
+                        log.info("Producto encontrado: {}", product.getName());
+                    } else {
+                        log.warn("El documento existe pero no se pudo convertir a Product");
+                    }
+                    return product;
+                } catch (Exception e) {
+                    log.error("Error convirtiendo documento a Product: {}", e.getMessage());
+                    return null;
+                }
             } else {
                 log.warn("Producto no encontrado con ID: {}", id);
                 return null;
@@ -119,6 +135,89 @@ public class ProductService {
                 .description("Servicio temporalmente no disponible")
                 .active(false)
                 .build());
+    }
+
+    /**
+     * Convierte un documento de Firestore a un objeto Product manejando las conversiones de tipo
+     */
+    private Product convertDocumentToProduct(QueryDocumentSnapshot doc) {
+        try {
+            String id = doc.getId();
+            String name = doc.getString("name");
+            String description = doc.getString("description");
+            Double price = doc.getDouble("price");
+            Boolean active = doc.getBoolean("active");
+            
+            // Manejar conversión de timestamps
+            Timestamp createdAt = convertToTimestamp(doc.get("createdAt"));
+            Timestamp updatedAt = convertToTimestamp(doc.get("updatedAt"));
+            
+            return Product.builder()
+                    .id(id)
+                    .name(name)
+                    .description(description)
+                    .price(price != null ? price : 0.0)
+                    .active(active != null ? active : true)
+                    .createdAt(createdAt)
+                    .updatedAt(updatedAt)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error convirtiendo documento {}: {}", doc.getId(), e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Convierte un DocumentSnapshot a un objeto Product manejando las conversiones de tipo
+     */
+    private Product convertDocumentSnapshotToProduct(com.google.cloud.firestore.DocumentSnapshot doc) {
+        try {
+            String id = doc.getId();
+            String name = doc.getString("name");
+            String description = doc.getString("description");
+            Double price = doc.getDouble("price");
+            Boolean active = doc.getBoolean("active");
+            
+            // Manejar conversión de timestamps
+            Timestamp createdAt = convertToTimestamp(doc.get("createdAt"));
+            Timestamp updatedAt = convertToTimestamp(doc.get("updatedAt"));
+            
+            return Product.builder()
+                    .id(id)
+                    .name(name)
+                    .description(description)
+                    .price(price != null ? price : 0.0)
+                    .active(active != null ? active : true)
+                    .createdAt(createdAt)
+                    .updatedAt(updatedAt)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error convirtiendo documento {}: {}", doc.getId(), e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Convierte varios tipos de datos a Timestamp
+     */
+    private Timestamp convertToTimestamp(Object timestampObj) {
+        if (timestampObj == null) {
+            return Timestamp.now();
+        }
+        
+        if (timestampObj instanceof Timestamp) {
+            return (Timestamp) timestampObj;
+        }
+        
+        // Si es un HashMap (formato LocalDateTime serializado), usar timestamp actual
+        if (timestampObj instanceof java.util.Map) {
+            log.warn("Encontrado HashMap en timestamp, usando timestamp actual");
+            return Timestamp.now();
+        }
+        
+        // Fallback: usar timestamp actual
+        log.warn("Tipo de timestamp no reconocido: {}, usando timestamp actual", timestampObj.getClass());
+        return Timestamp.now();
     }
 
     public Product getProductByIdFallback(String id, Exception ex) {

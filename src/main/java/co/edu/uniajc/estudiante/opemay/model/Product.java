@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.EqualsAndHashCode;
 
-import java.time.LocalDateTime;
+import com.google.cloud.Timestamp;
 
 @Data
 @Builder
@@ -23,9 +23,9 @@ public class Product {
     private String description;
     
     @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private Timestamp createdAt = Timestamp.now();
     
-    private LocalDateTime updatedAt;
+    private Timestamp updatedAt;
     
     @Builder.Default
     private Boolean active = true;

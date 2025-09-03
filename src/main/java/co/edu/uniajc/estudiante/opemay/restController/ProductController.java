@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.extern.slf4j.Slf4j;
-
 import co.edu.uniajc.estudiante.opemay.Service.ProductService;
 import co.edu.uniajc.estudiante.opemay.model.Product;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 @Slf4j
 public class ProductController {
 
