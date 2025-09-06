@@ -2,5 +2,5 @@ spring:
   application:
     name: opemay-test
 
-# Aquí puedes poner configs específicas de tests
-# Como no usamos Firebase, no hace falta nada más
+firebase:
+  enabled: false
