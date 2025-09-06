@@ -1,54 +1,60 @@
-package co.edu.uniajc.estudiante.opemay.Service;
+package co.edu.uniajc.estudiante.opemay.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.stereotype.Service;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.WriteResult;
-
 import co.edu.uniajc.estudiante.opemay.model.Product;
+import co.edu.uniajc.estudiante.opemay.respository.ProductRepository;
 
 @Service
 public class ProductService {
 
-    private final Firestore firestore;
+    private final ProductRepository productRepository;
 
-    public ProductService(Firestore firestore) {
-        this.firestore = firestore;
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 
     public Product createProduct(Product product) {
         try {
-            // Guardar en la colección "products"
-            ApiFuture<WriteResult> future = firestore.collection("products")
-                    .document(product.getId() != null ? product.getId() : firestore.collection("products").document().getId())
-                    .set(product);
-
-            System.out.println("Product saved at: " + future.get().getUpdateTime());
-            return product;
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Error saving product in Firebase", e);
+            return productRepository.save(product);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Error al guardar producto", e);
         }
     }
 
-        public List<Product> getAllProducts() {
-            List<Product> products = new ArrayList<>();
-            try {
-                ApiFuture<QuerySnapshot> future = firestore.collection("products").get();
-                List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-                for (QueryDocumentSnapshot doc : documents) {
-                    Product product = doc.toObject(Product.class);
-                    products.add(product);
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException("Error retrieving products from Firebase", e);
-            }
-            return products;
+    public List<Product> getAllProducts() {
+        try {
+            return productRepository.findAll();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Error al obtener productos", e);
         }
+    }
+
+    public Product getProductById(String id) {
+        try {
+            return productRepository.findById(id);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Error al obtener producto con id " + id, e);
+        }
+    }
+
+    public Product updateProduct(String id, Product updatedProduct) {
+        try {
+            return productRepository.update(id, updatedProduct);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Error al actualizar producto", e);
+        }
+    }
+
+    public String deleteProduct(String id) {
+        try {
+            productRepository.delete(id);
+            return "Producto eliminado con id: " + id;
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Error al eliminar producto", e);
+        }
+    }
 }
