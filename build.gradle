@@ -58,8 +58,8 @@ dependencyManagement {
 
 sonarqube {
     properties {
-        property "sonar.projectKey", "TU_PROJECT_KEY"
-        property "sonar.organization", "TU_ORG"
+        property "sonar.projectKey", "canarvaezis_Seminario-de-asiaticas---Opem-Ay-"
+        property "sonar.organization", "canarvaezis"
         property "sonar.host.url", "https://sonarcloud.io"
     }
 }

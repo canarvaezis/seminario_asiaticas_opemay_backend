@@ -8,11 +8,9 @@ on:
 
 jobs:
   sonarcloud:
-    name: SonarCloud
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -23,16 +21,8 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
+      - name: Build project
         run: ./gradlew clean build
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
-        with:
-          args: >
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ secrets.SONAR_ORG }}
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.java.binaries=build/classes/java/main
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Run SonarCloud
+        run: ./gradlew sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
