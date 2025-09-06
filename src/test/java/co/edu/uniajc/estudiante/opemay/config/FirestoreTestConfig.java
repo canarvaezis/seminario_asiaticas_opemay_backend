@@ -11,7 +11,7 @@ public class FirestoreTestConfig {
 
     @Bean
     public Firestore firestore() {
-        // Bean falso para que los tests no fallen
+        // Bean falso para evitar Firebase real en los tests
         return Mockito.mock(Firestore.class);
     }
 }
