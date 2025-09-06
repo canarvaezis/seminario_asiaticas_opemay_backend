@@ -1,4 +1,4 @@
-package co.edu.uniajc.estudiante.opemay.configtest;
+package co.edu.uniajc.estudiante.opemay.config;
 
 import java.io.IOException;
 import java.io.InputStream;
