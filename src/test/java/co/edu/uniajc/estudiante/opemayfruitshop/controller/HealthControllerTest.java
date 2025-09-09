@@ -1,5 +1,6 @@
 package co.edu.uniajc.estudiante.opemayfruitshop.controller;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,16 +16,18 @@ class HealthControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void homeShouldReturnRunningMessage() throws Exception {
+    @DisplayName("GET / debería devolver mensaje de inicio")
+    void testHomeEndpoint() throws Exception {
         mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("🚀 Opem-ay Fruit Shop API está corriendo!"));
+               .andExpect(status().isOk())
+               .andExpect(content().string("🚀 Opem-ay Fruit Shop API está corriendo!"));
     }
 
     @Test
-    void healthShouldReturnActiveMessage() throws Exception {
+    @DisplayName("GET /health debería devolver mensaje de salud")
+    void testHealthEndpoint() throws Exception {
         mockMvc.perform(get("/health"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("✅ El servidor está activo y funcionando correctamente."));
+               .andExpect(status().isOk())
+               .andExpect(content().string("✅ El servidor está activo y funcionando correctamente."));
     }
 }
