@@ -2,7 +2,7 @@ name: SonarCloud Scan
 
 on:
   push:
-    branches: [ develop, main, Cand ]
+    branches: [ develop, main]
   pull_request:
     branches: [ develop ]
 
