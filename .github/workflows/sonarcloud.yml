@@ -25,4 +25,8 @@ jobs:
         run: ./gradlew clean build
 
       - name: Run SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
         run: ./gradlew sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
