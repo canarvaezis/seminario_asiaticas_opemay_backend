@@ -3,13 +3,15 @@ package co.edu.uniajc.estudiante.opemayfruitshop.service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFuture;
@@ -26,103 +28,102 @@ import co.edu.uniajc.estudiante.opemayfruitshop.model.Product;
 class ProductServiceTest {
 
     private Firestore firestore;
+    private CollectionReference colRef;
+    private DocumentReference docRef;
     private ProductService productService;
 
     @BeforeEach
     void setUp() {
         firestore = mock(Firestore.class);
+        colRef = mock(CollectionReference.class);
+        docRef = mock(DocumentReference.class);
+
+        // Simular acceso a la colección "products"
+        when(firestore.collection("products")).thenReturn(colRef);
+        when(colRef.document(anyString())).thenReturn(docRef);
+
         productService = new ProductService(firestore);
     }
 
     @Test
-    void testSaveProduct() throws ExecutionException, InterruptedException {
-        Product product = new Product("1", "Manzana", 1.5, 100);
-        DocumentReference docRef = mock(DocumentReference.class);
-        ApiFuture<WriteResult> writeResultFuture = mock(ApiFuture.class);
-        CollectionReference colRef = mock(CollectionReference.class);
+    void testSaveProduct() throws Exception {
+        Product product = new Product("1", "Apple", 100, 2.5);
 
-        when(firestore.collection("products")).thenReturn(colRef);
-        when(colRef.document(product.getId())).thenReturn(docRef);
-        when(docRef.set(product)).thenReturn(writeResultFuture);
-        when(writeResultFuture.get()).thenReturn(mock(WriteResult.class));
+        ApiFuture<WriteResult> future = mock(ApiFuture.class);
+        when(docRef.set(product)).thenReturn(future);
+        when(future.get()).thenReturn(mock(WriteResult.class));
 
         Product saved = productService.save(product);
-        assertEquals("Manzana", saved.getName());
+
+        assertEquals("Apple", saved.getName());
+        verify(docRef, times(1)).set(product);
     }
 
     @Test
-    void testFindByIdExists() throws ExecutionException, InterruptedException {
-        String id = "1";
-        Product product = new Product(id, "Pera", 2.0, 50);
+    void testFindByIdExists() throws Exception {
+        Product product = new Product("1", "Banana", 50, 1.2);
 
-        DocumentReference docRef = mock(DocumentReference.class);
-        ApiFuture<DocumentSnapshot> future = mock(ApiFuture.class);
         DocumentSnapshot snapshot = mock(DocumentSnapshot.class);
+        ApiFuture<DocumentSnapshot> future = mock(ApiFuture.class);
 
-        when(firestore.collection("products").document(id)).thenReturn(docRef);
         when(docRef.get()).thenReturn(future);
         when(future.get()).thenReturn(snapshot);
         when(snapshot.exists()).thenReturn(true);
         when(snapshot.toObject(Product.class)).thenReturn(product);
 
-        Optional<Product> result = productService.findById(id);
-        assertTrue(result.isPresent());
-        assertEquals("Pera", result.get().getName());
+        Optional<Product> found = productService.findById("1");
+
+        assertTrue(found.isPresent());
+        assertEquals("Banana", found.get().getName());
     }
 
     @Test
-    void testFindByIdNotExists() throws ExecutionException, InterruptedException {
-        String id = "2";
-
-        DocumentReference docRef = mock(DocumentReference.class);
-        ApiFuture<DocumentSnapshot> future = mock(ApiFuture.class);
+    void testFindByIdNotExists() throws Exception {
         DocumentSnapshot snapshot = mock(DocumentSnapshot.class);
+        ApiFuture<DocumentSnapshot> future = mock(ApiFuture.class);
 
-        when(firestore.collection("products").document(id)).thenReturn(docRef);
         when(docRef.get()).thenReturn(future);
         when(future.get()).thenReturn(snapshot);
         when(snapshot.exists()).thenReturn(false);
 
-        Optional<Product> result = productService.findById(id);
-        assertTrue(result.isEmpty());
+        Optional<Product> found = productService.findById("999");
+
+        assertTrue(found.isEmpty());
     }
 
     @Test
-    void testFindAll() throws ExecutionException, InterruptedException {
-        Product product1 = new Product("1", "Manzana", 1.5, 100);
-        Product product2 = new Product("2", "Pera", 2.0, 50);
+    void testFindAll() throws Exception {
+        Product product1 = new Product("1", "Apple", 100, 2.5);
+        Product product2 = new Product("2", "Orange", 200, 3.0);
 
-        CollectionReference colRef = mock(CollectionReference.class);
-        ApiFuture<QuerySnapshot> queryFuture = mock(ApiFuture.class);
         QuerySnapshot querySnapshot = mock(QuerySnapshot.class);
+        ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
+
         QueryDocumentSnapshot doc1 = mock(QueryDocumentSnapshot.class);
         QueryDocumentSnapshot doc2 = mock(QueryDocumentSnapshot.class);
 
-        when(firestore.collection("products")).thenReturn(colRef);
-        when(colRef.get()).thenReturn(queryFuture);
-        when(queryFuture.get()).thenReturn(querySnapshot);
+        when(colRef.get()).thenReturn(future);
+        when(future.get()).thenReturn(querySnapshot);
         when(querySnapshot.getDocuments()).thenReturn(Arrays.asList(doc1, doc2));
+
         when(doc1.toObject(Product.class)).thenReturn(product1);
         when(doc2.toObject(Product.class)).thenReturn(product2);
 
         List<Product> products = productService.findAll();
+
         assertEquals(2, products.size());
-        assertEquals("Manzana", products.get(0).getName());
-        assertEquals("Pera", products.get(1).getName());
+        assertEquals("Apple", products.get(0).getName());
+        assertEquals("Orange", products.get(1).getName());
     }
 
     @Test
-    void testDelete() throws ExecutionException, InterruptedException {
-        String id = "1";
-        DocumentReference docRef = mock(DocumentReference.class);
-        ApiFuture<WriteResult> writeResultFuture = mock(ApiFuture.class);
-        CollectionReference colRef = mock(CollectionReference.class);
+    void testDelete() throws Exception {
+        ApiFuture<WriteResult> future = mock(ApiFuture.class);
+        when(docRef.delete()).thenReturn(future);
+        when(future.get()).thenReturn(mock(WriteResult.class));
 
-        when(firestore.collection("products")).thenReturn(colRef);
-        when(colRef.document(id)).thenReturn(docRef);
-        when(docRef.delete()).thenReturn(writeResultFuture);
-        when(writeResultFuture.get()).thenReturn(mock(WriteResult.class));
+        productService.delete("1");
 
-        productService.delete(id); // no exception = ok
+        verify(docRef, times(1)).delete();
     }
 }

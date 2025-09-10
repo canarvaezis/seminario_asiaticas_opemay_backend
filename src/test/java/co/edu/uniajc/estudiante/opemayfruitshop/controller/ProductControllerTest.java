@@ -2,23 +2,24 @@ package co.edu.uniajc.estudiante.opemayfruitshop.controller;
 
 import co.edu.uniajc.estudiante.opemayfruitshop.model.Product;
 import co.edu.uniajc.estudiante.opemayfruitshop.service.ProductService;
-import org.junit.jupiter.api.DisplayName;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.mockito.Mockito.when;
 
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
@@ -29,61 +30,61 @@ class ProductControllerTest {
     @MockBean
     private ProductService productService;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Test
-    @DisplayName("GET /api/products devuelve lista de productos")
     void testGetAll() throws Exception {
-        Product p1 = new Product("1", "Manzana", 1.5, 100);
-        Product p2 = new Product("2", "Pera", 2.0, 50);
-        List<Product> products = Arrays.asList(p1, p2);
+        List<Product> products = Arrays.asList(
+                new Product("1", "Apple", 100, 2.5),
+                new Product("2", "Banana", 200, 1.5)
+        );
 
         when(productService.findAll()).thenReturn(products);
 
         mockMvc.perform(get("/api/products"))
-               .andExpect(status().isOk())
-               .andExpect(content().json("[{'id':'1','name':'Manzana','price':1.5,'stock':100},{'id':'2','name':'Pera','price':2.0,'stock':50}]"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Apple"))
+                .andExpect(jsonPath("$[1].name").value("Banana"));
     }
 
     @Test
-    @DisplayName("GET /api/products/{id} devuelve producto existente")
-    void testGetByIdExists() throws Exception {
-        Product p = new Product("1", "Manzana", 1.5, 100);
-        when(productService.findById("1")).thenReturn(Optional.of(p));
+    void testGetByIdFound() throws Exception {
+        Product product = new Product("1", "Apple", 100, 2.5);
+
+        when(productService.findById("1")).thenReturn(Optional.of(product));
 
         mockMvc.perform(get("/api/products/1"))
-               .andExpect(status().isOk())
-               .andExpect(content().json("{'id':'1','name':'Manzana','price':1.5,'stock':100}"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Apple"));
     }
 
     @Test
-    @DisplayName("GET /api/products/{id} devuelve 404 si no existe")
     void testGetByIdNotFound() throws Exception {
-        when(productService.findById("1")).thenReturn(Optional.empty());
+        when(productService.findById("999")).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/products/1"))
-               .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/products/999"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("POST /api/products crea un producto")
     void testCreateProduct() throws Exception {
-        Product p = new Product("1", "Manzana", 1.5, 100);
-        when(productService.save(any(Product.class))).thenReturn(p);
+        Product product = new Product("1", "Apple", 100, 2.5);
 
-        String json = "{\"id\":\"1\",\"name\":\"Manzana\",\"price\":1.5,\"stock\":100}";
+        when(productService.save(any(Product.class))).thenReturn(product);
 
         mockMvc.perform(post("/api/products")
-               .contentType(MediaType.APPLICATION_JSON)
-               .content(json))
-               .andExpect(status().isOk())
-               .andExpect(content().json(json));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(product)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Apple"));
     }
 
     @Test
-    @DisplayName("DELETE /api/products/{id} elimina un producto")
     void testDeleteProduct() throws Exception {
-        Mockito.doNothing().when(productService).delete("1");
+        doNothing().when(productService).delete(eq("1"));
 
         mockMvc.perform(delete("/api/products/1"))
-               .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent());
     }
 }
