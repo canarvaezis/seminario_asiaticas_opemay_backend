@@ -8,9 +8,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
-    private String id;      // Firebase UID
+    private String id; // UID
     private String email;
     private String name;
     private String address;
     private String phone;
+    public String password;
 }

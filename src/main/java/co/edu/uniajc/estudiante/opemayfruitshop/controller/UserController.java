@@ -17,14 +17,16 @@ public class UserController {
         this.service = service;
     }
 
-    // ✅ Crear
+    // ✅ Crear usuario desde JSON
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestParam String email,
-                                           @RequestParam String password,
-                                           @RequestParam String name,
-                                           @RequestParam String address,
-                                           @RequestParam String phone) {
-        return ResponseEntity.ok(service.createUser(email, password, name, address, phone));
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        return ResponseEntity.ok(
+                service.createUser(user.getEmail(),
+                                   user.getPassword(),
+                                   user.getName(),
+                                   user.getAddress(),
+                                   user.getPhone())
+        );
     }
 
     // ✅ Leer uno
