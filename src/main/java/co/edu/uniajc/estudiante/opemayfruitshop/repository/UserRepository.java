@@ -19,7 +19,7 @@ public class UserRepository {
         return FirestoreClient.getFirestore();
     }
 
-    // Crear o actualizar usuario
+    // ✅ Crear o actualizar usuario
     public void saveUser(User user) throws ExecutionException, InterruptedException {
         getFirestore()
                 .collection(COLLECTION)
@@ -28,7 +28,7 @@ public class UserRepository {
                 .get();
     }
 
-    // Leer usuario por ID
+    // ✅ Leer usuario por ID
     public User getUser(String id) throws ExecutionException, InterruptedException {
         DocumentSnapshot snapshot = getFirestore()
                 .collection(COLLECTION)
@@ -38,7 +38,7 @@ public class UserRepository {
         return snapshot.exists() ? snapshot.toObject(User.class) : null;
     }
 
-    // Listar todos los usuarios
+    // ✅ Listar todos los usuarios
     public List<User> getAllUsers() throws ExecutionException, InterruptedException {
         ApiFuture<QuerySnapshot> future = getFirestore()
                 .collection(COLLECTION)
@@ -53,10 +53,22 @@ public class UserRepository {
         return users;
     }
 
-    // Eliminar usuario de Firestore
+    // ✅ Eliminar usuario de Firestore + carrito
     public void deleteUser(String id) throws ExecutionException, InterruptedException {
-        getFirestore()
+        Firestore db = getFirestore();
+
+        // Borrar carrito asociado
+        ApiFuture<WriteResult> deleteCart = db
                 .collection(COLLECTION)
+                .document(id)
+                .collection("cart")
+                .document("cart")
+                .delete();
+
+        deleteCart.get(); // esperar escritura
+
+        // Borrar documento del usuario
+        db.collection(COLLECTION)
                 .document(id)
                 .delete()
                 .get();
