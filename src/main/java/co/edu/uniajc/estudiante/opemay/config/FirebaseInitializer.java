@@ -21,7 +21,7 @@ public class FirebaseInitializer {
 
     @PostConstruct
     public void iniFirestore() throws IOException {
-        String firebaseConfig = System.getenv("FIREBASE_CONFIG_01");
+        String firebaseConfig = System.getenv("FIREBASE_CONFIG");
 
         InputStream serviceAccount;
         if (firebaseConfig != null && !firebaseConfig.isBlank()) {
@@ -38,8 +38,8 @@ public class FirebaseInitializer {
         }
 
         FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .build();
+            .setCredentials(GoogleCredentials.getApplicationDefault())
+            .build();
 
         if (FirebaseApp.getApps().isEmpty()) {
             FirebaseApp.initializeApp(options);

@@ -30,12 +30,11 @@ jobs:
           echo "${{ secrets.FIREBASE_CONFIG }}" > $GITHUB_WORKSPACE/firebase-config.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/firebase-config.json" >> $GITHUB_ENV
 
-      # Build sin tests (si no quieres Firebase real en test)
-      - name: Build with Gradle (skip tests)
+      # ✅ Build con tests habilitados
+      - name: Build with Gradle (with tests)
         run: ./gradlew clean build --no-daemon
 
-
-      # Escaneo SonarCloud
+      # 🚀 Escaneo SonarCloud (recoge resultados de test y cobertura)
       - name: Run SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
