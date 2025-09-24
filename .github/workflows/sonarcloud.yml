@@ -35,7 +35,6 @@ jobs:
 
       # 👇 Escaneo SonarCloud
       - name: Build project
-        run: ./gradlew clean build
       - name: Run SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
