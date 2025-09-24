@@ -18,7 +18,6 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 
 @Configuration
-@Profile("!test")
 public class FirebaseInitializer {
 
 @PostConstruct
