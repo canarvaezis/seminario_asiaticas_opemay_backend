@@ -1,4 +1,4 @@
-rootProject.name = 'opemay',
+rootProject.name = 'opemay'
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(24)
