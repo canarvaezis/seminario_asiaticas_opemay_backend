@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up JDK 24
         uses: actions/setup-java@v4
         with:
@@ -22,17 +23,20 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
-      # Build sin tests para evitar fallos de Firebase
+      # 🔑 Crear archivo de credenciales Firebase
+      - name: Set up Firebase config
+        run: |
+          echo "${{ secrets.FIREBASE_CONFIG }}" > $GITHUB_WORKSPACE/firebase-config.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/firebase-config.json" >> $GITHUB_ENV
+
+      # Build sin tests (si no quieres Firebase real en test)
       - name: Build with Gradle (skip tests)
         run: ./gradlew clean build -x test --no-daemon
 
-      # 👇 Escaneo SonarCloud
-      - name: Build project
-        run: ./gradlew clean build
+      # Escaneo SonarCloud
       - name: Run SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          FIREBASE_CONFIG_01: ${{ secrets.FIREBASE_CONFIG_01 }}
         run: ./gradlew sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
