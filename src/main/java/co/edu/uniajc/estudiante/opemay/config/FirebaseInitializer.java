@@ -26,6 +26,7 @@ public class FirebaseInitializer {
 
         InputStream serviceAccount;
         if (firebaseConfig != null && !firebaseConfig.isBlank()) {
+            // Usar secret en CI/CD
             serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
         } else {
             // fallback: archivo local en resources para desarrollo

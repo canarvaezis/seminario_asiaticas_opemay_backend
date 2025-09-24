@@ -7,7 +7,7 @@ management:
     health:
       show-details: always
 
-# Configuración de Resilience4j Circuit Breaker
+# Configuración de Resilience4j
 resilience4j:
   circuitbreaker:
     instances:
@@ -27,7 +27,6 @@ resilience4j:
           - java.util.concurrent.ExecutionException
           - java.lang.InterruptedException
 
-  # Configuración de Retry (opcional)
   retry:
     instances:
       productService:
@@ -36,7 +35,6 @@ resilience4j:
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2
 
-  # Configuración de Rate Limiter (opcional)
   ratelimiter:
     instances:
       productService:
@@ -44,22 +42,22 @@ resilience4j:
         limit-refresh-period: 1s
         timeout-duration: 3s
 
-# Logging para Circuit Breaker
+# Logging
 logging:
   level:
     io.github.resilience4j: DEBUG
     co.edu.uniajc.estudiante.opemay: INFO
 
-# Configuración base de datos H2 para Liquibase (opcional)
+# Configuración base de datos H2 para Liquibase
 spring:
   datasource:
     url: jdbc:h2:mem:auditdb
     driver-class-name: org.h2.Driver
     username: sa
-    password: 
+    password:
   h2:
     console:
       enabled: true
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
-    enabled: false # Deshabilitado por defecto, habilitar si necesitas migraciones
+    enabled: false # Actívalo si quieres que Liquibase ejecute migraciones
