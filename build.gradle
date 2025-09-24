@@ -60,7 +60,16 @@ dependencies {
 	
 	// Testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+	testImplementation 'org.mockito:mockito-inline:5.2.0'
+	testImplementation 'org.assertj:assertj-core'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// Testing específico para JWT
+	testImplementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	testRuntimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	testRuntimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 }
 
 dependencyManagement {
