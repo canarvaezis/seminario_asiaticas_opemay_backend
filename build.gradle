@@ -2,7 +2,24 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.4'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.sonarqube' version '5.1.0.4882' 
+	id 'org.sonarqube' version '5.1.0.4882'
+
+	id 'jacoco'
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+		xml.outputLocation = layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml")
+        html.required = true
+    }
 }
 
 group = 'co.edu.uniajc.estudiante'
@@ -101,6 +118,10 @@ sonarqube {
         property "sonar.organization", System.getenv("SONAR_ORG")
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.token", System.getenv("SONAR_TOKEN")
+
+        // 👇 muy importante para cobertura
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
+
 
