@@ -24,7 +24,9 @@ jobs:
 
       - name: Verify Java version
         run: java -version
-
+     # 🔑 Fix permisos de gradlew
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
       # 👇 Aquí Gradle ya usará el JDK 24 instalado
       - name: Build with Gradle
         run: ./gradlew clean build --no-daemon
