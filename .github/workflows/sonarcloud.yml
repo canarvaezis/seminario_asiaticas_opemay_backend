@@ -1,10 +1,10 @@
-name: Build and Analyze
+name: SonarCloud Scan
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ develop, main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ develop ]
 
 jobs:
   sonarcloud:
