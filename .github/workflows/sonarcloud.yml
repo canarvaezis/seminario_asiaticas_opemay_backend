@@ -24,11 +24,11 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
-      # 🔑 Crear archivo de credenciales Firebase
+            # 🔑 Crear archivo de credenciales Firebase
       - name: Set up Firebase config
         run: |
-          echo "${{ secrets.FIREBASE_CONFIG_01 }}" > $GITHUB_WORKSPACE/firebase-config.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/firebase-config.json" >> $GITHUB_ENV
+          echo "${{ secrets.FIREBASE_CONFIG_01 }}" > $GITHUB_WORKSPACE/firebase-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/firebase-key.json" >> $GITHUB_ENV
 
       # ✅ Build con tests habilitados
       - name: Build with Gradle (with tests)
