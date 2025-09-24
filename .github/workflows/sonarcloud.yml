@@ -34,5 +34,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+          FIREBASE_CONFIG_01: ${{ secrets.FIREBASE_CONFIG_01 }}
         run: ./gradlew sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
