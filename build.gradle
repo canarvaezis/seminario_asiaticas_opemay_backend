@@ -9,11 +9,9 @@ version = '0.0.1-SNAPSHOT'
 description = 'Proyecto de eccomerse para una tienda de frutas'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(24)
-	}
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
 }
-
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
