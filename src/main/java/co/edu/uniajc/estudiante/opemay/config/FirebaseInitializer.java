@@ -33,21 +33,36 @@ public class FirebaseInitializer {
             .forEach(entry -> System.out.println("  " + entry.getKey() + " = " + 
                 (entry.getValue().length() > 50 ? entry.getValue().substring(0, 50) + "..." : entry.getValue())));
         
-        // 🔑 Trae el secret como string
+        // 🔑 Trae el secret como string o usar GOOGLE_APPLICATION_CREDENTIALS
         String firebaseConfig = System.getenv("FIREBASE_CONFIG_01");
+        String googleCredentialsPath = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
         
         System.out.println("firebaseConfig is null: " + (firebaseConfig == null));
-        System.out.println("firebaseConfig is blank: " + (firebaseConfig != null ? firebaseConfig.isBlank() : "N/A"));
+        System.out.println("googleCredentialsPath is null: " + (googleCredentialsPath == null));
+        
         if (firebaseConfig != null) {
+            System.out.println("firebaseConfig is blank: " + firebaseConfig.isBlank());
             System.out.println("firebaseConfig length: " + firebaseConfig.length());
             System.out.println("firebaseConfig first 100 chars: " + 
                 firebaseConfig.substring(0, Math.min(100, firebaseConfig.length())));
         }
         
+        if (googleCredentialsPath != null) {
+            System.out.println("googleCredentialsPath: " + googleCredentialsPath);
+        }
+        
         InputStream serviceAccount;
         if (firebaseConfig != null && !firebaseConfig.isBlank()) {
-            System.out.println("✅ Using Firebase config from environment variable");
+            System.out.println("✅ Using Firebase config from FIREBASE_CONFIG_01 environment variable");
             serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
+        } else if (googleCredentialsPath != null && !googleCredentialsPath.isBlank()) {
+            System.out.println("✅ Using Firebase config from GOOGLE_APPLICATION_CREDENTIALS file");
+            try {
+                serviceAccount = new java.io.FileInputStream(googleCredentialsPath);
+            } catch (Exception e) {
+                System.out.println("❌ Error reading credentials file: " + e.getMessage());
+                serviceAccount = null;
+            }
         } else {
             System.out.println("⚠️ Firebase config not found in env, trying local file");
             serviceAccount = getClass().getClassLoader().getResourceAsStream("firebase-key.json");
