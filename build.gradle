@@ -21,7 +21,9 @@ configurations {
 repositories {
 	mavenCentral()
 }
-
+springBoot {
+    mainClass = 'co.edu.uniajc.estudiante.opemay.OpemayApplication'
+}
 ext {
 	set('springCloudVersion', "2025.0.0")
 }
