@@ -21,7 +21,7 @@ public class FirebaseInitializer {
 
     @PostConstruct
     public void iniFirestore() throws IOException {
-        String firebaseConfig = System.getenv("FIREBASE_CONFIG");
+        String firebaseConfig = System.getenv("FIREBASE_CONFIG_01");
 
         InputStream serviceAccount;
         if (firebaseConfig != null && !firebaseConfig.isBlank()) {

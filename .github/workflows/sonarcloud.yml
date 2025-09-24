@@ -27,7 +27,7 @@ jobs:
       # 🔑 Crear archivo de credenciales Firebase
       - name: Set up Firebase config
         run: |
-          echo "${{ secrets.FIREBASE_CONFIG }}" > $GITHUB_WORKSPACE/firebase-config.json
+          echo "${{ secrets.FIREBASE_CONFIG_01 }}" > $GITHUB_WORKSPACE/firebase-config.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/firebase-config.json" >> $GITHUB_ENV
 
       # ✅ Build con tests habilitados
