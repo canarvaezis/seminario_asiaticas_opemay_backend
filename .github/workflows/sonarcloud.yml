@@ -34,9 +34,11 @@ jobs:
         run: ./gradlew clean build -x test --no-daemon
 
       # 👇 Escaneo SonarCloud
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
-        with:
-            organization: ${{ secrets.SONAR_ORG }}
-            projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
-            token: ${{ secrets.SONAR_TOKEN }}
+      - name: Build project
+        run: ./gradlew clean build
+      - name: Run SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        run: ./gradlew sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
