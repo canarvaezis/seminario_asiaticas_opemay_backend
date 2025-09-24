@@ -32,7 +32,7 @@ jobs:
 
       # Build sin tests (si no quieres Firebase real en test)
       - name: Build with Gradle (skip tests)
-        run: ./gradlew clean build --no-daemon
+        run: ./gradlew clean build -x test --no-daemon
 
 
       # Escaneo SonarCloud
