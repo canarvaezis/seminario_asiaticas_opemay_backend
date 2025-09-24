@@ -1,0 +1,65 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+
+# Configuración de Resilience4j Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      productService:
+        register-health-indicator: true
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+        record-exceptions:
+          - java.lang.RuntimeException
+          - java.util.concurrent.ExecutionException
+          - java.lang.InterruptedException
+
+  # Configuración de Retry (opcional)
+  retry:
+    instances:
+      productService:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+
+  # Configuración de Rate Limiter (opcional)
+  ratelimiter:
+    instances:
+      productService:
+        limit-for-period: 10
+        limit-refresh-period: 1s
+        timeout-duration: 3s
+
+# Logging para Circuit Breaker
+logging:
+  level:
+    io.github.resilience4j: DEBUG
+    co.edu.uniajc.estudiante.opemay: INFO
+
+# Configuración base de datos H2 para Liquibase (opcional)
+spring:
+  datasource:
+    url: jdbc:h2:mem:auditdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: false # Deshabilitado por defecto, habilitar si necesitas migraciones

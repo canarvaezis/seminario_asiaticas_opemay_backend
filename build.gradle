@@ -29,15 +29,47 @@ ext {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// Spring Boot Starters
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+	
+	// Circuit Breaker y Resilience4j
 	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+	implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+	implementation 'io.github.resilience4j:resilience4j-micrometer'
+	
+	// Liquibase para migraciones (para posibles integraciones SQL)
+	implementation 'org.liquibase:liquibase-core'
+	implementation 'com.h2database:h2' // Base temporal para Liquibase
+	
+	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// Firebase
 	implementation 'com.google.firebase:firebase-admin:9.2.0'
+	
+	// Validación
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	
+	// Testing
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+	testImplementation 'org.mockito:mockito-inline:5.2.0'
+	testImplementation 'org.assertj:assertj-core'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// Testing específico para JWT
+	testImplementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	testRuntimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	testRuntimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 }
 
 dependencyManagement {
@@ -48,4 +80,17 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.named('bootRun') {
+	jvmArgs = [
+		'--add-opens=java.base/java.time=ALL-UNNAMED',
+		'--add-opens=java.base/java.time.chrono=ALL-UNNAMED',
+		'--add-opens=java.base/java.time.format=ALL-UNNAMED',
+		'--add-opens=java.base/java.time.temporal=ALL-UNNAMED',
+		'--add-opens=java.base/java.time.zone=ALL-UNNAMED',
+		'--add-opens=java.base/java.util=ALL-UNNAMED',
+		'--add-opens=java.base/java.lang=ALL-UNNAMED',
+		'--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
+	]
 }
