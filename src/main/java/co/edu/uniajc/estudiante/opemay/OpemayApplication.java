@@ -15,4 +15,5 @@ public class OpemayApplication {
         SpringApplication.run(OpemayApplication.class, args);
         log.info("Aplicación Opemay iniciada correctamente");
     }
-}
+} 
+ 
