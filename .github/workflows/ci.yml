@@ -23,13 +23,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew clean build -Dorg.gradle.java.installations.auto-download=false
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.projectKey=TU_PROJECT_KEY
-            -Dsonar.organization=TU_ORG
+            -Dsonar.projectKey=mi-org_mi-proyecto
+            -Dsonar.organization=mi-org
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
