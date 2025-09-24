@@ -38,8 +38,8 @@ public class FirebaseInitializer {
         }
 
         FirebaseOptions options = FirebaseOptions.builder()
-            .setCredentials(GoogleCredentials.getApplicationDefault())
-            .build();
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .build();
 
         if (FirebaseApp.getApps().isEmpty()) {
             FirebaseApp.initializeApp(options);
