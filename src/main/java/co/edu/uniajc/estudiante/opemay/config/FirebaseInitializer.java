@@ -23,7 +23,7 @@ class FirebaseInitializer {
 
     private boolean firebaseInitialized = false;
 
-    @PostConstruct
+ @PostConstruct
     public void initFirestore() throws IOException {
         String firebaseConfig = System.getenv("FIREBASE_CONFIG_03");
 
@@ -35,20 +35,20 @@ class FirebaseInitializer {
             return;
         }
 
-     if (FirebaseApp.getApps().isEmpty()) {
-    try {
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .build();
-        FirebaseApp.initializeApp(options);
-        this.firebaseInitialized = true;
-    } catch (Exception ignored) { // <- variable de excepción sin usar
-        this.firebaseInitialized = false;
+        if (FirebaseApp.getApps().isEmpty()) {
+            try {
+                FirebaseOptions options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .build();
+                FirebaseApp.initializeApp(options);
+                this.firebaseInitialized = true;
+            } catch (Exception ignored) { // excepción ignorada
+                this.firebaseInitialized = false;
+            }
+        } else {
+            this.firebaseInitialized = true;
+        }
     }
-} else {
-    this.firebaseInitialized = true;
-}
-
 
     @Bean
     public Firestore firestore() {
