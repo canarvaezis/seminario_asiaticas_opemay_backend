@@ -64,7 +64,7 @@ public class FirebaseInitializer {
                 serviceAccount = null;
             }
         } else {
-            System.out.println("⚠️ Firebase config not found in env, trying local file");
+            System.out.println("⚠ Firebase config not found in env, trying local file");
             serviceAccount = getClass().getClassLoader().getResourceAsStream("firebase-key.json");
         }
         
@@ -90,7 +90,7 @@ public class FirebaseInitializer {
                 this.firebaseInitialized = false;
             }
         } else {
-            System.out.println("ℹ️ Firebase ya estaba inicializado, se omite");
+            System.out.println("ℹ Firebase ya estaba inicializado, se omite");
             this.firebaseInitialized = true;
         }
         
@@ -100,7 +100,7 @@ public class FirebaseInitializer {
     @Bean
     public Firestore firestore() {
         if (!firebaseInitialized) {
-            System.out.println("⚠️ Firebase no está inicializado. Retornando null para Firestore bean.");
+            System.out.println("⚠ Firebase no está inicializado. Retornando null para Firestore bean.");
             return null; // O puedes lanzar una excepción personalizada
         }
         
