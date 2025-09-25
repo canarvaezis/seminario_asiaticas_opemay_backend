@@ -175,12 +175,9 @@ class ProductServiceTest {
             when(queryDocumentSnapshot.getString("name")).thenReturn("Test Product");
             when(queryDocumentSnapshot.getString("description")).thenReturn("Test Description");
             when(queryDocumentSnapshot.getDouble("price")).thenReturn(99.99);
-            when(queryDocumentSnapshot.getString("category")).thenReturn("Test Category");
-            when(queryDocumentSnapshot.getString("imageUrl")).thenReturn("test-image.jpg");
-            when(queryDocumentSnapshot.getLong("stock")).thenReturn(10L);
             when(queryDocumentSnapshot.getBoolean("active")).thenReturn(true);
-            when(queryDocumentSnapshot.getTimestamp("createdAt")).thenReturn(Timestamp.now());
-            when(queryDocumentSnapshot.getTimestamp("updatedAt")).thenReturn(Timestamp.now());
+            when(queryDocumentSnapshot.get("createdAt")).thenReturn(Timestamp.now());
+            when(queryDocumentSnapshot.get("updatedAt")).thenReturn(Timestamp.now());
 
             // Act
             List<Product> result = productService.getAllProducts();
@@ -255,12 +252,9 @@ class ProductServiceTest {
             when(documentSnapshot.getString("name")).thenReturn("Test Product");
             when(documentSnapshot.getString("description")).thenReturn("Test Description");
             when(documentSnapshot.getDouble("price")).thenReturn(99.99);
-            when(documentSnapshot.getString("category")).thenReturn("Test Category");
-            when(documentSnapshot.getString("imageUrl")).thenReturn("test-image.jpg");
-            when(documentSnapshot.getLong("stock")).thenReturn(10L);
             when(documentSnapshot.getBoolean("active")).thenReturn(true);
-            when(documentSnapshot.getTimestamp("createdAt")).thenReturn(Timestamp.now());
-            when(documentSnapshot.getTimestamp("updatedAt")).thenReturn(Timestamp.now());
+            when(documentSnapshot.get("createdAt")).thenReturn(Timestamp.now());
+            when(documentSnapshot.get("updatedAt")).thenReturn(Timestamp.now());
 
             // Act
             Product result = productService.getProductById(productId);
