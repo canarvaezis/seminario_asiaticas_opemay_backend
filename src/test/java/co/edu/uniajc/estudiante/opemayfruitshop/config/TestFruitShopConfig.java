@@ -1,4 +1,4 @@
-package co.edu.uniajc.estudiante.opemay.config;
+package co.edu.uniajc.estudiante.opemayfruitshop.config;
 
 import com.google.cloud.firestore.Firestore;
 import org.mockito.Mockito;
@@ -10,11 +10,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Configuración específica para pruebas
+ * Configuración específica para pruebas de FruitShop
  */
 @TestConfiguration
 @Profile("test")
-public class TestConfig {
+public class TestFruitShopConfig {
 
     @Bean
     @Primary
