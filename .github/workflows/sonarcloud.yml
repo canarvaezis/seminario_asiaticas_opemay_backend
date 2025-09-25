@@ -25,12 +25,12 @@ jobs:
       # 🔑 Configurar Firebase como variable de entorno (coincide con tu código)
       - name: Set up Firebase config
         run: |
-          echo "FIREBASE_CONFIG_01=${{ secrets.FIREBASE_CONFIG_01 }}" >> $GITHUB_ENV
+          echo "FIREBASE_CONFIG_0X=${{ secrets.FIREBASE_CONFIG_0X }}" >> $GITHUB_ENV
         
       # ✅ Build + tests + generar reporte de cobertura
       - name: Build with Gradle (with tests)
         env:
-          FIREBASE_CONFIG_01: ${{ secrets.FIREBASE_CONFIG_01 }}
+          FIREBASE_CONFIG_0X: ${{ secrets.FIREBASE_CONFIG_0X }}
         run: ./gradlew clean build jacocoTestReport --no-daemon
         
       # 🚀 Escaneo SonarCloud
@@ -39,5 +39,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          FIREBASE_CONFIG_01: ${{ secrets.FIREBASE_CONFIG_01 }}
+          FIREBASE_CONFIG_0X: ${{ secrets.FIREBASE_CONFIG_0X }}
         run: ./gradlew sonarqube --no-daemon
