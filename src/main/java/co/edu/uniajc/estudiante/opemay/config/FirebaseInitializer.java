@@ -35,20 +35,20 @@ class FirebaseInitializer {
             return;
         }
 
-        if (FirebaseApp.getApps().isEmpty()) {
-            try {
-                FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .build();
-                FirebaseApp.initializeApp(options);
-                this.firebaseInitialized = true;
-            } catch (Exception e) {
-                this.firebaseInitialized = false;
-            }
-        } else {
-            this.firebaseInitialized = true;
-        }
+     if (FirebaseApp.getApps().isEmpty()) {
+    try {
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .build();
+        FirebaseApp.initializeApp(options);
+        this.firebaseInitialized = true;
+    } catch (Exception ignored) { // <- variable de excepción sin usar
+        this.firebaseInitialized = false;
     }
+} else {
+    this.firebaseInitialized = true;
+}
+
 
     @Bean
     public Firestore firestore() {
