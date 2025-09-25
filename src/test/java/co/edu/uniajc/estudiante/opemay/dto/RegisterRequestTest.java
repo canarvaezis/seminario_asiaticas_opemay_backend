@@ -62,7 +62,7 @@ class RegisterRequestTest {
         assertThat(violations).isNotEmpty();
         assertThat(violations)
             .extracting(ConstraintViolation::getMessage)
-            .anyMatch(message -> message.contains("blank") || message.contains("empty"));
+            .anyMatch(message -> message.contains("username") && message.contains("vacío"));
     }
 
     @Test
@@ -100,7 +100,7 @@ class RegisterRequestTest {
         assertThat(violations).isNotEmpty();
         assertThat(violations)
             .extracting(ConstraintViolation::getMessage)
-            .anyMatch(message -> message.contains("blank") || message.contains("empty"));
+            .anyMatch(message -> message.contains("password") && message.contains("vacío"));
     }
 
     @Test

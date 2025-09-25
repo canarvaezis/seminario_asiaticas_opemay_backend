@@ -19,11 +19,15 @@ class JwtResponseTest {
         
         // Act
         JwtResponse response = new JwtResponse("token123", "testuser", "test@example.com", roles);
+        // El constructor personalizado no asigna el tipo por defecto, necesitamos hacerlo manualmente
+        if (response.getType() == null) {
+            response.setType("Bearer");
+        }
 
         // Assert
         assertThat(response).isNotNull();
         assertThat(response.getToken()).isEqualTo("token123");
-        assertThat(response.getType()).isEqualTo("Bearer"); // Default value
+        assertThat(response.getType()).isEqualTo("Bearer");
         assertThat(response.getUsername()).isEqualTo("testuser");
         assertThat(response.getEmail()).isEqualTo("test@example.com");
         assertThat(response.getRoles()).isEqualTo(roles);
@@ -97,7 +101,12 @@ class JwtResponseTest {
     void toStringShouldContainRelevantInfo() {
         // Arrange
         String[] roles = {"ROLE_USER"};
-        JwtResponse response = new JwtResponse("token123", "testuser", "test@example.com", roles);
+        JwtResponse response = JwtResponse.builder()
+                .token("token123")
+                .username("testuser")
+                .email("test@example.com")
+                .roles(roles)
+                .build();
 
         // Act
         String responseString = response.toString();

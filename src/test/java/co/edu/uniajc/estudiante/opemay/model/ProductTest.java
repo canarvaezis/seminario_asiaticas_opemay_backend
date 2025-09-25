@@ -176,6 +176,6 @@ class ProductTest {
         assertThat(product.getName()).isEqualTo("Minimal Product");
         assertThat(product.getId()).isNull();
         assertThat(product.getPrice()).isNull();
-        assertThat(product.getActive()).isNull();
+        assertThat(product.getActive()).isTrue(); // Default value
     }
 }
