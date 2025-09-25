@@ -23,7 +23,7 @@ public class FirebaseInitializer {
     public void initFirestore() throws IOException {
         // 🔍 DEBUG: Ver todas las variables de entorno relacionadas con Firebase
         System.out.println("=== FIREBASE DEBUG INFO ===");
-        System.out.println("FIREBASE_CONFIG_0X exists: " + (System.getenv("FIREBASE_CONFIG_0X") != null));
+        System.out.println("FIREBASE_CONFIG_03 exists: " + (System.getenv("FIREBASE_CONFIG_03") != null));
         
         // Ver todas las variables que contengan "FIREBASE"
         System.out.println("All FIREBASE env vars:");
@@ -33,7 +33,7 @@ public class FirebaseInitializer {
                 (entry.getValue().length() > 50 ? entry.getValue().substring(0, 50) + "..." : entry.getValue())));
         
         // 🔑 Trae el secret como string
-        String firebaseConfig = System.getenv("FIREBASE_CONFIG_0X");
+        String firebaseConfig = System.getenv("FIREBASE_CONFIG_03");
         
         System.out.println("firebaseConfig is null: " + (firebaseConfig == null));
         
@@ -46,10 +46,10 @@ public class FirebaseInitializer {
         
         InputStream serviceAccount;
         if (firebaseConfig != null && !firebaseConfig.isBlank()) {
-            System.out.println("✅ Using Firebase config from FIREBASE_CONFIG_0X environment variable");
+            System.out.println("✅ Using Firebase config from FIREBASE_CONFIG_03 environment variable");
             serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
         } else {
-            System.out.println("❌ No se encontró configuración de Firebase en FIREBASE_CONFIG_0X. Saltando inicialización...");
+            System.out.println("❌ No se encontró configuración de Firebase en FIREBASE_CONFIG_03. Saltando inicialización...");
             this.firebaseInitialized = false;
             return;
         }
