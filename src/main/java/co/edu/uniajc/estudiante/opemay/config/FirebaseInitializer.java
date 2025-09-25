@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.PostConstruct;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -21,59 +20,24 @@ public class FirebaseInitializer {
 
     @PostConstruct
     public void initFirestore() throws IOException {
-        // 🔍 DEBUG: Ver todas las variables de entorno relacionadas con Firebase
         System.out.println("=== FIREBASE DEBUG INFO ===");
-        System.out.println("FIREBASE_CONFIG_01 exists: " + (System.getenv("FIREBASE_CONFIG_01") != null));
-        System.out.println("FIREBASE_CONFIG exists: " + (System.getenv("FIREBASE_CONFIG") != null));
-        
-        // Ver todas las variables que contengan "FIREBASE"
-        System.out.println("All FIREBASE env vars:");
-        System.getenv().entrySet().stream()
-            .filter(entry -> entry.getKey().toUpperCase().contains("FIREBASE"))
-            .forEach(entry -> System.out.println("  " + entry.getKey() + " = " + 
-                (entry.getValue().length() > 50 ? entry.getValue().substring(0, 50) + "..." : entry.getValue())));
-        
-        // 🔑 Trae el secret como string o usar GOOGLE_APPLICATION_CREDENTIALS
-        String firebaseConfig = System.getenv("FIREBASE_CONFIG_01");
-        String googleCredentialsPath = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
-        
-        System.out.println("firebaseConfig is null: " + (firebaseConfig == null));
-        System.out.println("googleCredentialsPath is null: " + (googleCredentialsPath == null));
-        
-        if (firebaseConfig != null) {
-            System.out.println("firebaseConfig is blank: " + firebaseConfig.isBlank());
-            System.out.println("firebaseConfig length: " + firebaseConfig.length());
-            System.out.println("firebaseConfig first 100 chars: " + 
-                firebaseConfig.substring(0, Math.min(100, firebaseConfig.length())));
-        }
-        
-        if (googleCredentialsPath != null) {
-            System.out.println("googleCredentialsPath: " + googleCredentialsPath);
-        }
-        
-        InputStream serviceAccount;
-        if (firebaseConfig != null && !firebaseConfig.isBlank()) {
-            System.out.println("✅ Using Firebase config from FIREBASE_CONFIG_01 environment variable");
-            serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
-        } else if (googleCredentialsPath != null && !googleCredentialsPath.isBlank()) {
-            System.out.println("✅ Using Firebase config from GOOGLE_APPLICATION_CREDENTIALS file");
-            try {
-                serviceAccount = new java.io.FileInputStream(googleCredentialsPath);
-            } catch (Exception e) {
-                System.out.println("❌ Error reading credentials file: " + e.getMessage());
-                serviceAccount = null;
-            }
-        } else {
-            System.out.println("⚠ Firebase config not found in env, trying local file");
-            serviceAccount = getClass().getClassLoader().getResourceAsStream("firebase-key.json");
-        }
-        
-        if (serviceAccount == null) {
-            System.out.println("❌ No se encontró configuración de Firebase. Saltando inicialización...");
+
+        // 🔑 Leer única variable de entorno
+        String firebaseConfig = System.getenv("FIREBASE_CONFIG_0X");
+        System.out.println("FIREBASE_CONFIG_0X exists: " + (firebaseConfig != null));
+
+        if (firebaseConfig == null || firebaseConfig.isBlank()) {
+            System.out.println("❌ No se encontró FIREBASE_CONFIG_0X en variables de entorno. Saltando inicialización...");
             this.firebaseInitialized = false;
             return;
         }
-        
+
+        System.out.println("firebaseConfig length: " + firebaseConfig.length());
+        System.out.println("firebaseConfig first 100 chars: " + 
+            firebaseConfig.substring(0, Math.min(100, firebaseConfig.length())));
+
+        InputStream serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
+
         // ✅ Evita IllegalStateException en tests o múltiples contextos
         System.out.println("Current FirebaseApp instances: " + FirebaseApp.getApps().size());
         if (FirebaseApp.getApps().isEmpty()) {
@@ -101,7 +65,7 @@ public class FirebaseInitializer {
     public Firestore firestore() {
         if (!firebaseInitialized) {
             System.out.println("⚠ Firebase no está inicializado. Retornando null para Firestore bean.");
-            return null; // O puedes lanzar una excepción personalizada
+            return null;
         }
         
         try {
