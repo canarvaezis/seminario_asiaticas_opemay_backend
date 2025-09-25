@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.context.annotation.Import;
-import co.edu.uniajc.estudiante.opemay.config.TestConfig;
 
 import co.edu.uniajc.estudiante.opemay.Service.JwtService;
+import co.edu.uniajc.estudiante.opemay.config.TestConfig;
 
 /**
  * Pruebas funcionales simples para JWT

@@ -2,10 +2,11 @@ package co.edu.uniajc.estudiante.opemay;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
 import co.edu.uniajc.estudiante.opemay.config.TestConfig;
-import org.springframework.context.annotation.Import;
 
 @SpringBootTest(classes = OpemayApplication.class)
 @ActiveProfiles("test")
