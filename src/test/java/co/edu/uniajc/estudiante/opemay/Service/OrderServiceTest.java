@@ -2,7 +2,7 @@ package co.edu.uniajc.estudiante.opemay.Service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import com.google.cloud.Timestamp;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -54,11 +54,10 @@ class OrderServiceTest {
 
         // Setup cart item
         CartItem cartItem = CartItem.builder()
-                .cartId("cart-123")
                 .productId("product-123")
                 .productName("Test Product")
                 .quantity(2)
-                .unitPrice(25.00)
+                .price(25.00)
                 .build();
 
         // Setup test product
@@ -198,7 +197,7 @@ class OrderServiceTest {
 
         // Then
         assertEquals("CANCELLED", result.getStatus());
-        assertEquals(OrderStatus.CANCELLED, result.getStatus());
+        assertEquals("CANCELLED", result.getStatus());
         // Verificar que la orden fue actualizada
         assertNotNull(result.getUpdatedAt());
         verify(orderRepository).update(testOrder);

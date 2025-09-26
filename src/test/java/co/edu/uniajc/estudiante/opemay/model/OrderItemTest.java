@@ -12,11 +12,10 @@ class OrderItemTest {
     @BeforeEach
     void setUp() {
         orderItem = OrderItem.builder()
-                .orderId("order-123")
                 .productId("product-123")
                 .productName("Producto de Prueba")
                 .quantity(3)
-                .unitPrice(12.50)
+                .price(12.50)
                 .imageUrl("http://example.com/image.jpg")
                 .build();
     }
@@ -35,7 +34,7 @@ class OrderItemTest {
 
     @Test
     void testGetSubtotalWithZeroPrice() {
-        orderItem.setUnitPrice(0.0);
+        orderItem.setPrice(0.0);
         assertEquals(0.0, orderItem.getSubtotal(), 0.01);
     }
 
@@ -68,7 +67,7 @@ class OrderItemTest {
 
         // Restaurar y test con precio inválido
         orderItem.setQuantity(3);
-        orderItem.setUnitPrice(-1.0);
+        orderItem.setPrice(-1.0);
         assertFalse(orderItem.isValid());
     }
 
@@ -78,7 +77,7 @@ class OrderItemTest {
         orderItem.setProductId("valid-product-id");
         orderItem.setProductName("Valid Product Name");
         orderItem.setQuantity(1);
-        orderItem.setUnitPrice(0.01); // Precio mínimo válido
+        orderItem.setPrice(0.01); // Precio mínimo válido
 
         assertTrue(orderItem.isValid());
     }
@@ -87,17 +86,16 @@ class OrderItemTest {
     void shouldImplementEqualsAndHashCodeCorrectly() {
         // Given
         OrderItem item1 = OrderItem.builder()
-                .orderId("order-123")
                 .productId("product-456")
+                .productName("Test Product")
                 .build();
         
         OrderItem item2 = OrderItem.builder()
-                .orderId("order-123")
                 .productId("product-456")
+                .productName("Test Product")
                 .build();
         
         // Then
-        assertEquals(item1.getOrderId(), item2.getOrderId());
         assertEquals(item1.getProductId(), item2.getProductId());
     }
 }

@@ -16,7 +16,7 @@ class OrderTest {
         order = Order.builder()
                 .id("order-123")
                 .userId("user-123")
-                .status(OrderStatus.PENDING)
+                .status("PENDING")
                 .active(true)
                 .paymentMethod("CREDIT_CARD")
                 .paymentStatus("PENDING")
@@ -26,7 +26,6 @@ class OrderTest {
 
         // Agregar items de prueba
         OrderItem item1 = OrderItem.builder()
-                .orderId("order-123")
                 .productId("product-1")
                 .productName("Producto 1")
                 .quantity(2)
@@ -34,7 +33,6 @@ class OrderTest {
                 .build();
 
         OrderItem item2 = OrderItem.builder()
-                .orderId("order-123")
                 .productId("product-2")
                 .productName("Producto 2")
                 .quantity(1)
@@ -98,11 +96,10 @@ class OrderTest {
 
         // Restaurar items pero quitar user ID
         OrderItem item = OrderItem.builder()
-                .orderId("order-123")
                 .productId("product-1")
                 .productName("Producto 1")
                 .quantity(2)
-                .unitPrice(10.00)
+                .price(10.00)
                 .build();
         order.getItems().add(item);
 
