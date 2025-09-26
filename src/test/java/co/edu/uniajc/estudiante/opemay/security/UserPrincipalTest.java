@@ -232,14 +232,15 @@ class UserPrincipalTest {
                 .username("minimal")
                 .build();
         
-        // Verificar que el usuario tiene valores null para los campos que esperamos
+        // Verificar que el usuario tiene valores null para algunos campos y defaults para otros
         assertNull(minimalUser.getEmail());
         assertNull(minimalUser.getPassword());
         assertNull(minimalUser.getRoles());
-        assertNull(minimalUser.getEnabled());
-        assertNull(minimalUser.getAccountNonExpired());
-        assertNull(minimalUser.getAccountNonLocked());
-        assertNull(minimalUser.getCredentialsNonExpired());
+        // Estos campos tienen valores por defecto en la clase User
+        assertTrue(minimalUser.getEnabled()); // @Builder.Default = true
+        assertTrue(minimalUser.getAccountNonExpired()); // @Builder.Default = true
+        assertTrue(minimalUser.getAccountNonLocked()); // @Builder.Default = true
+        assertTrue(minimalUser.getCredentialsNonExpired()); // @Builder.Default = true
         
         UserPrincipal minimalPrincipal = UserPrincipal.create(minimalUser);
         
@@ -249,16 +250,50 @@ class UserPrincipalTest {
         assertNull(minimalPrincipal.getEmail());
         assertNull(minimalPrincipal.getPassword());
         
-        // Verificar que los valores por defecto son false para campos Boolean null
-        assertFalse(minimalPrincipal.isEnabled(), "isEnabled() debe ser false para usuario con enabled=null");
-        assertFalse(minimalPrincipal.isAccountNonExpired(), "isAccountNonExpired() debe ser false para usuario con accountNonExpired=null");
-        assertFalse(minimalPrincipal.isAccountNonLocked(), "isAccountNonLocked() debe ser false para usuario con accountNonLocked=null");
-        assertFalse(minimalPrincipal.isCredentialsNonExpired(), "isCredentialsNonExpired() debe ser false para usuario con credentialsNonExpired=null");
+        // Verificar que UserPrincipal usa correctamente los valores por defecto del User
+        // Como el User tiene valores por defecto (true), UserPrincipal debería reflejarlos
+        assertTrue(minimalPrincipal.isEnabled(), "isEnabled() debe ser true (valor por defecto del User)");
+        assertTrue(minimalPrincipal.isAccountNonExpired(), "isAccountNonExpired() debe ser true (valor por defecto del User)");
+        assertTrue(minimalPrincipal.isAccountNonLocked(), "isAccountNonLocked() debe ser true (valor por defecto del User)");
+        assertTrue(minimalPrincipal.isCredentialsNonExpired(), "isCredentialsNonExpired() debe ser true (valor por defecto del User)");
         
         // Verificar authorities
         Collection<? extends GrantedAuthority> authorities = minimalPrincipal.getAuthorities();
         assertNotNull(authorities, "getAuthorities() no debe devolver null");
         assertTrue(authorities.isEmpty(), "getAuthorities() debe devolver una colección vacía para usuario sin roles");
+    }
+
+    @Test
+    void testWithExplicitNullValues() {
+        // Crear un usuario con valores explícitamente null
+        User nullUser = new User();
+        nullUser.setId("null-user");
+        nullUser.setUsername("nulluser");
+        nullUser.setEnabled(null);
+        nullUser.setAccountNonExpired(null);
+        nullUser.setAccountNonLocked(null);
+        nullUser.setCredentialsNonExpired(null);
+        
+        // Verificar que efectivamente son null
+        assertNull(nullUser.getEnabled());
+        assertNull(nullUser.getAccountNonExpired());
+        assertNull(nullUser.getAccountNonLocked());
+        assertNull(nullUser.getCredentialsNonExpired());
+        
+        UserPrincipal nullPrincipal = UserPrincipal.create(nullUser);
+        
+        // Verificar campos básicos
+        assertEquals("null-user", nullPrincipal.getId());
+        assertEquals("nulluser", nullPrincipal.getUsername());
+        
+        // Para valores null, UserPrincipal debería devolver false
+        assertFalse(nullPrincipal.isEnabled(), "isEnabled() debe ser false cuando User.enabled es null");
+        assertFalse(nullPrincipal.isAccountNonExpired(), "isAccountNonExpired() debe ser false cuando User.accountNonExpired es null");
+        assertFalse(nullPrincipal.isAccountNonLocked(), "isAccountNonLocked() debe ser false cuando User.accountNonLocked es null");
+        assertFalse(nullPrincipal.isCredentialsNonExpired(), "isCredentialsNonExpired() debe ser false cuando User.credentialsNonExpired es null");
+        
+        // Verificar authorities
+        assertTrue(nullPrincipal.getAuthorities().isEmpty());
     }
 
     @Test
