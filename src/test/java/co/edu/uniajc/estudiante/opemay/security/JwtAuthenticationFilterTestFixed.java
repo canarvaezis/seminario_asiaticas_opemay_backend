@@ -90,7 +90,7 @@ class JwtAuthenticationFilterTestFixed {
         when(jwtService.getUsernameFromToken(token)).thenReturn(username);
         when(jwtService.validateToken(token)).thenReturn(true);
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
-        when(userDetails.getUsername()).thenReturn(username);
+        // Remover stubbing innecesario de userDetails.getUsername()
 
         // Act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
