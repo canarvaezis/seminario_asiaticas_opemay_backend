@@ -6,14 +6,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import co.edu.uniajc.estudiante.opemayfruitshop.config.TestFruitShopConfig;
+import co.edu.uniajc.estudiante.opemay.OpemayApplication;
 
-@SpringBootTest(classes = OpemAyFruitShopApplication.class)
+@SpringBootTest(classes = OpemayApplication.class)
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
     "firebase.enabled=false"
 })
-@Import(TestFruitShopConfig.class)
 class OpemAyFruitShopApplicationTests {
 
     @Test

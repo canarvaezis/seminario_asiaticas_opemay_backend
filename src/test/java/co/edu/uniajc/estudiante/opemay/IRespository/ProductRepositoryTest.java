@@ -30,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import co.edu.uniajc.estudiante.opemay.model.Product;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("unchecked")
 class ProductRepositoryTest {
 
     @InjectMocks
