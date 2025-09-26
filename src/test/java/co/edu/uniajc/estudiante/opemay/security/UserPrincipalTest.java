@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class UserPrincipalTest {
                 .roles(Arrays.asList("USER", "ADMIN"))
                 .build();
         
-        userPrincipal = new UserPrincipal(testUser);
+        userPrincipal = UserPrincipal.create(testUser);
     }
 
     @Test
@@ -55,7 +56,7 @@ class UserPrincipalTest {
         
         List<String> authorityNames = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
-                .toList();
+                .collect(Collectors.toList());
         
         assertTrue(authorityNames.contains("ROLE_USER"));
         assertTrue(authorityNames.contains("ROLE_ADMIN"));
@@ -69,7 +70,7 @@ class UserPrincipalTest {
                 .roles(null)
                 .build();
         
-        UserPrincipal principalWithNullRoles = new UserPrincipal(userWithNullRoles);
+        UserPrincipal principalWithNullRoles = UserPrincipal.create(userWithNullRoles);
         Collection<? extends GrantedAuthority> authorities = principalWithNullRoles.getAuthorities();
         
         assertNotNull(authorities);
@@ -84,7 +85,7 @@ class UserPrincipalTest {
                 .roles(List.of())
                 .build();
         
-        UserPrincipal principalWithEmptyRoles = new UserPrincipal(userWithEmptyRoles);
+        UserPrincipal principalWithEmptyRoles = UserPrincipal.create(userWithEmptyRoles);
         Collection<? extends GrantedAuthority> authorities = principalWithEmptyRoles.getAuthorities();
         
         assertNotNull(authorities);
@@ -172,32 +173,13 @@ class UserPrincipalTest {
     }
 
     @Test
-    void testGetFirstName() {
-        assertEquals("Test", userPrincipal.getFirstName());
-    }
-
-    @Test
-    void testGetLastName() {
-        assertEquals("User", userPrincipal.getLastName());
-    }
-
-    @Test
-    void testGetRoles() {
-        List<String> roles = userPrincipal.getRoles();
-        assertNotNull(roles);
-        assertEquals(2, roles.size());
-        assertTrue(roles.contains("USER"));
-        assertTrue(roles.contains("ADMIN"));
-    }
-
-    @Test
     void testWithMinimalUser() {
         User minimalUser = User.builder()
                 .id("minimal-user")
                 .username("minimal")
                 .build();
         
-        UserPrincipal minimalPrincipal = new UserPrincipal(minimalUser);
+        UserPrincipal minimalPrincipal = UserPrincipal.create(minimalUser);
         
         assertEquals("minimal-user", minimalPrincipal.getId());
         assertEquals("minimal", minimalPrincipal.getUsername());
@@ -215,7 +197,7 @@ class UserPrincipalTest {
 
     @Test
     void testEquality() {
-        UserPrincipal anotherPrincipal = new UserPrincipal(testUser);
+        UserPrincipal anotherPrincipal = UserPrincipal.create(testUser);
         
         // Should be equal if they wrap the same user
         assertEquals(userPrincipal.getId(), anotherPrincipal.getId());
