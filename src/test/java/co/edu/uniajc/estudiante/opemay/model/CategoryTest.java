@@ -21,7 +21,7 @@ class CategoryTest {
                 .name("Frutas")
                 .description("Frutas frescas y deliciosas")
                 .slug("frutas")
-                .enabled(true)
+                .active(true)
                 .createdAt(Timestamp.now())
                 .updatedAt(Timestamp.now())
                 .build();
@@ -34,7 +34,7 @@ class CategoryTest {
         assertEquals("Frutas", category.getName());
         assertEquals("Frutas frescas y deliciosas", category.getDescription());
         assertEquals("frutas", category.getSlug());
-        assertTrue(category.getEnabled());
+        assertTrue(category.getActive());
         assertNotNull(category.getCreatedAt());
         assertNotNull(category.getUpdatedAt());
     }
@@ -56,7 +56,7 @@ class CategoryTest {
         testCategory.setName("Test Category");
         testCategory.setDescription("Test Description");
         testCategory.setSlug("test-category");
-        testCategory.setEnabled(false);
+        testCategory.setActive(false);
         
         Timestamp now = Timestamp.now();
         testCategory.setCreatedAt(now);
@@ -66,7 +66,7 @@ class CategoryTest {
         assertEquals("Test Category", testCategory.getName());
         assertEquals("Test Description", testCategory.getDescription());
         assertEquals("test-category", testCategory.getSlug());
-        assertFalse(testCategory.getEnabled());
+        assertFalse(testCategory.getActive());
         assertEquals(now, testCategory.getCreatedAt());
         assertEquals(now, testCategory.getUpdatedAt());
     }
@@ -129,7 +129,7 @@ class CategoryTest {
                 .build();
         
         // El valor por defecto debería ser null, no false
-        assertNull(defaultCategory.getEnabled());
+        assertTrue(defaultCategory.getActive()); // El valor por defecto es true
     }
 
     @Test
@@ -161,7 +161,7 @@ class CategoryTest {
                 .name("Frutas")
                 .description("Frutas frescas y deliciosas")
                 .slug("frutas")
-                .enabled(true)
+                .active(true)
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();
@@ -176,7 +176,7 @@ class CategoryTest {
                 .name("Frutas")
                 .description("Frutas frescas y deliciosas")
                 .slug("frutas")
-                .enabled(true)
+                .active(true)
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();
@@ -191,7 +191,7 @@ class CategoryTest {
                 .name("Builder Test")
                 .description("Testing builder pattern")
                 .slug("builder-test")
-                .enabled(false)
+                .active(false)
                 .build();
         
         assertNotNull(builtCategory);
@@ -199,7 +199,7 @@ class CategoryTest {
         assertEquals("Builder Test", builtCategory.getName());
         assertEquals("Testing builder pattern", builtCategory.getDescription());
         assertEquals("builder-test", builtCategory.getSlug());
-        assertFalse(builtCategory.getEnabled());
+        assertFalse(builtCategory.getActive());
     }
 
     @Test
@@ -249,7 +249,7 @@ class CategoryTest {
         assertNull(nullCategory.getName());
         assertNull(nullCategory.getDescription());
         assertNull(nullCategory.getSlug());
-        assertNull(nullCategory.getEnabled());
+        assertNull(nullCategory.getActive());
         assertNull(nullCategory.getCreatedAt());
         assertNull(nullCategory.getUpdatedAt());
     }
