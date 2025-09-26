@@ -88,9 +88,8 @@ public class OrderController {
 
             // Los usuarios solo pueden ver sus propias órdenes, los admin pueden ver todas
             User currentUser = userService.getUserByEmail(principal.getName());
-            if (!currentUser.getRole().equals("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("No tienes permisos para ver esta orden");
+            if (!currentUser.getRoles().contains("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
+                throw new RuntimeException("No autorizado para ver esta orden");
             }
 
             return ResponseEntity.ok(order);
@@ -199,9 +198,8 @@ public class OrderController {
             }
 
             User currentUser = userService.getUserByEmail(principal.getName());
-            if (!currentUser.getRole().equals("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("No tienes permisos para cancelar esta orden");
+            if (!currentUser.getRoles().contains("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
+                throw new RuntimeException("No autorizado para cancelar esta orden");
             }
 
             Order cancelledOrder = orderService.cancelOrder(orderId, reason);

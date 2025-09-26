@@ -72,8 +72,6 @@ public class OrderService {
             Product product = productRepository.getProductById(cartItem.getProductId());
             
             OrderItem orderItem = OrderItem.builder()
-                    .id(UUID.randomUUID().toString())
-                    .orderId(order.getId())
                     .productId(cartItem.getProductId())
                     .productName(cartItem.getProductName())
                     .quantity(cartItem.getQuantity())
@@ -94,7 +92,7 @@ public class OrderService {
         for (CartItem cartItem : cart.getItems()) {
             Product product = productRepository.getProductById(cartItem.getProductId());
             product.setStock(product.getStock() - cartItem.getQuantity());
-            productRepository.update(product);
+            productRepository.save(product);
         }
 
         // Marcar carrito como completado
@@ -161,7 +159,7 @@ public class OrderService {
                 order.setConfirmedAt(Timestamp.now());
                 break;
             case "PROCESSING":
-                order.setProcessingAt(Timestamp.now());
+                order.updateStatus("PROCESSING");
                 break;
             case "SHIPPED":
                 order.setShippedAt(Timestamp.now());
@@ -171,7 +169,7 @@ public class OrderService {
                 order.setPaymentStatus("COMPLETED");
                 break;
             case "CANCELLED":
-                order.setCancelledAt(Timestamp.now());
+                order.updateStatus("CANCELLED");
                 // Restaurar stock si la orden se cancela antes de enviar
                 if (List.of("PENDING", "CONFIRMED", "PROCESSING").contains(order.getStatus())) {
                     restoreStock(order);
@@ -203,8 +201,7 @@ public class OrderService {
         }
 
         order.updateStatus("CANCELLED");
-        order.setCancelledAt(Timestamp.now());
-        order.setCancelReason(reason);
+        order.updateStatus("CANCELLED");
 
         // Restaurar stock
         restoreStock(order);
@@ -229,7 +226,8 @@ public class OrderService {
 
         order.setPaymentStatus(paymentStatus);
         if ("COMPLETED".equals(paymentStatus)) {
-            order.setPaidAt(Timestamp.now());
+            order.setPaymentStatus("PAID");
+            order.setUpdatedAt(Timestamp.now());
         }
 
         orderRepository.update(order);
@@ -307,7 +305,7 @@ public class OrderService {
             Product product = productRepository.getProductById(item.getProductId());
             if (product != null) {
                 product.setStock(product.getStock() + item.getQuantity());
-                productRepository.update(product);
+                productRepository.save(product);
             }
         }
     }
