@@ -68,4 +68,90 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="003-create-cart-audit" author="developer">
+        <comment>Crear tabla de auditoría para carritos</comment>
+        
+        <createTable tableName="cart_audit">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="cart_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="old_values" type="TEXT"/>
+            <column name="new_values" type="TEXT"/>
+            <column name="total_amount" type="DECIMAL(10,2)"/>
+            <column name="total_items" type="INTEGER"/>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="timestamp" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createIndex tableName="cart_audit" indexName="idx_cart_audit_cart_id">
+            <column name="cart_id"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_audit" indexName="idx_cart_audit_user_id">
+            <column name="user_id"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_audit" indexName="idx_cart_audit_timestamp">
+            <column name="timestamp"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_audit" indexName="idx_cart_audit_action">
+            <column name="action"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="004-create-cart-item-audit" author="developer">
+        <comment>Crear tabla de auditoría para items de carrito</comment>
+        
+        <createTable tableName="cart_item_audit">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="cart_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="action" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="old_quantity" type="INTEGER"/>
+            <column name="new_quantity" type="INTEGER"/>
+            <column name="price" type="DECIMAL(10,2)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="timestamp" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createIndex tableName="cart_item_audit" indexName="idx_cart_item_audit_cart_id">
+            <column name="cart_id"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_item_audit" indexName="idx_cart_item_audit_product_id">
+            <column name="product_id"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_item_audit" indexName="idx_cart_item_audit_timestamp">
+            <column name="timestamp"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_item_audit" indexName="idx_cart_item_audit_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
