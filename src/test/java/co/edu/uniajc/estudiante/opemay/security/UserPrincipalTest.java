@@ -99,7 +99,7 @@ class UserPrincipalTest {
     void testIsAccountNonExpired() {
         assertTrue(userPrincipal.isAccountNonExpired());
         
-        // Test con cuenta expirada - crear nuevo UserPrincipal
+        // Test con cuenta expirada - crear nuevo principal
         User expiredUser = User.builder()
                 .id("user-456")
                 .username("expireduser")
@@ -108,13 +108,13 @@ class UserPrincipalTest {
         UserPrincipal expiredPrincipal = UserPrincipal.create(expiredUser);
         assertFalse(expiredPrincipal.isAccountNonExpired());
         
-        // Test con null - crear nuevo UserPrincipal
-        User nullUser = User.builder()
+        // Test con null - crear nuevo principal
+        User nullExpiredUser = User.builder()
                 .id("user-789")
                 .username("nulluser")
                 .accountNonExpired(null)
                 .build();
-        UserPrincipal nullPrincipal = UserPrincipal.create(nullUser);
+        UserPrincipal nullPrincipal = UserPrincipal.create(nullExpiredUser);
         assertFalse(nullPrincipal.isAccountNonExpired());
     }
 

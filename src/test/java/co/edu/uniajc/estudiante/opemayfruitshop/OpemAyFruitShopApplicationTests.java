@@ -13,6 +13,7 @@ import co.edu.uniajc.estudiante.opemay.OpemayApplication;
 @TestPropertySource(properties = {
     "firebase.enabled=false"
 })
+@Import(co.edu.uniajc.estudiante.opemayfruitshop.config.TestFruitShopConfig.class)
 class OpemAyFruitShopApplicationTests {
 
     @Test

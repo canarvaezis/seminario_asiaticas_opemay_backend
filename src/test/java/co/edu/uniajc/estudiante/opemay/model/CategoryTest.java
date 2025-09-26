@@ -103,9 +103,11 @@ class CategoryTest {
 
     @Test
     void testGenerateSlugFromNameWithNullName() {
-        Category categoryWithNullName = Category.builder().name(null).build();
-        categoryWithNullName.generateSlugFromName();
-        assertNull(categoryWithNullName.getSlug());
+        Category category = Category.builder().name(null).build();
+        // No debería lanzar excepción cuando name es null
+        assertDoesNotThrow(() -> category.generateSlugFromName());
+        // Si name es null, slug debería seguir siendo null
+        assertNull(category.getSlug());
     }
 
     @Test
@@ -243,14 +245,18 @@ class CategoryTest {
 
     @Test
     void testCategoryWithAllFieldsNull() {
-        Category nullCategory = new Category();
+        Category nullCategory = Category.builder().build();
         
         assertNull(nullCategory.getId());
         assertNull(nullCategory.getName());
         assertNull(nullCategory.getDescription());
+        assertNull(nullCategory.getImageUrl());
         assertNull(nullCategory.getSlug());
-        assertNull(nullCategory.getActive());
-        assertNull(nullCategory.getCreatedAt());
+        assertNull(nullCategory.getSortOrder());
+        // active tiene valor por defecto de true, no null
+        assertTrue(nullCategory.getActive());
+        // createdAt tiene valor por defecto
+        assertNotNull(nullCategory.getCreatedAt());
         assertNull(nullCategory.getUpdatedAt());
     }
 }

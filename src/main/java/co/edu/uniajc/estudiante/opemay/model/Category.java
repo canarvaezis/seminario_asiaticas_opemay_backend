@@ -51,7 +51,7 @@ public class Category {
      * Genera un slug basado en el nombre si no existe
      */
     public void generateSlugFromName() {
-        if (this.slug == null || this.slug.trim().isEmpty()) {
+        if ((this.slug == null || this.slug.trim().isEmpty()) && this.name != null) {
             this.slug = this.name
                 .toLowerCase()
                 .trim()
