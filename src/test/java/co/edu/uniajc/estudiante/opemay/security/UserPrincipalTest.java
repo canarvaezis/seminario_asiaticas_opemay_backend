@@ -226,32 +226,39 @@ class UserPrincipalTest {
 
     @Test
     void testWithMinimalUser() {
+        // Crear usuario completamente nuevo para evitar cualquier interferencia
         User minimalUser = User.builder()
                 .id("minimal-user")
                 .username("minimal")
                 .build();
         
+        // Verificar que el usuario tiene valores null para los campos que esperamos
+        assertNull(minimalUser.getEmail());
+        assertNull(minimalUser.getPassword());
+        assertNull(minimalUser.getRoles());
+        assertNull(minimalUser.getEnabled());
+        assertNull(minimalUser.getAccountNonExpired());
+        assertNull(minimalUser.getAccountNonLocked());
+        assertNull(minimalUser.getCredentialsNonExpired());
+        
         UserPrincipal minimalPrincipal = UserPrincipal.create(minimalUser);
         
+        // Verificar campos básicos
         assertEquals("minimal-user", minimalPrincipal.getId());
         assertEquals("minimal", minimalPrincipal.getUsername());
         assertNull(minimalPrincipal.getEmail());
         assertNull(minimalPrincipal.getPassword());
         
         // Verificar que los valores por defecto son false para campos Boolean null
-        // (la implementación real puede devolver false para null)
-        Boolean enabled = minimalPrincipal.isEnabled();
-        Boolean accountNonExpired = minimalPrincipal.isAccountNonExpired();
-        Boolean accountNonLocked = minimalPrincipal.isAccountNonLocked();
-        Boolean credentialsNonExpired = minimalPrincipal.isCredentialsNonExpired();
+        assertFalse(minimalPrincipal.isEnabled(), "isEnabled() debe ser false para usuario con enabled=null");
+        assertFalse(minimalPrincipal.isAccountNonExpired(), "isAccountNonExpired() debe ser false para usuario con accountNonExpired=null");
+        assertFalse(minimalPrincipal.isAccountNonLocked(), "isAccountNonLocked() debe ser false para usuario con accountNonLocked=null");
+        assertFalse(minimalPrincipal.isCredentialsNonExpired(), "isCredentialsNonExpired() debe ser false para usuario con credentialsNonExpired=null");
         
-        // Solo verificar que no lanza excepción, no el valor específico
-        assertNotNull(enabled);
-        assertNotNull(accountNonExpired);
-        assertNotNull(accountNonLocked);
-        assertNotNull(credentialsNonExpired);
-        
-        assertTrue(minimalPrincipal.getAuthorities().isEmpty());
+        // Verificar authorities
+        Collection<? extends GrantedAuthority> authorities = minimalPrincipal.getAuthorities();
+        assertNotNull(authorities, "getAuthorities() no debe devolver null");
+        assertTrue(authorities.isEmpty(), "getAuthorities() debe devolver una colección vacía para usuario sin roles");
     }
 
     @Test
@@ -261,6 +268,29 @@ class UserPrincipalTest {
         // Should be equal if they wrap the same user
         assertEquals(userPrincipal.getId(), anotherPrincipal.getId());
         assertEquals(userPrincipal.getUsername(), anotherPrincipal.getUsername());
+    }
+
+    @Test
+    void testDebugMinimalUserAuthorities() {
+        // Test de depuración específico para el problema de authorities
+        User debugUser = User.builder()
+                .id("debug-user")
+                .username("debug")
+                .roles(null) // Explícitamente null
+                .build();
+        
+        UserPrincipal debugPrincipal = UserPrincipal.create(debugUser);
+        
+        Collection<? extends GrantedAuthority> authorities = debugPrincipal.getAuthorities();
+        
+        // Debug información
+        System.out.println("Authorities: " + authorities);
+        System.out.println("Authorities class: " + (authorities != null ? authorities.getClass().getName() : "null"));
+        System.out.println("Is empty: " + (authorities != null ? authorities.isEmpty() : "N/A"));
+        
+        assertNotNull(authorities, "authorities no debe ser null");
+        assertEquals(0, authorities.size(), "authorities debe tener size 0");
+        assertTrue(authorities.isEmpty(), "authorities.isEmpty() debe ser true");
     }
 
     @Test
