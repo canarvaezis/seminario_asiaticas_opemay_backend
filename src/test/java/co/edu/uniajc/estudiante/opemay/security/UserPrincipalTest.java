@@ -235,7 +235,9 @@ class UserPrincipalTest {
         // Verificar que el usuario tiene valores null para algunos campos y defaults para otros
         assertNull(minimalUser.getEmail());
         assertNull(minimalUser.getPassword());
-        assertNull(minimalUser.getRoles());
+        // Los roles tienen valor por defecto ["USER"] según @Builder.Default
+        assertNotNull(minimalUser.getRoles());
+        assertEquals(List.of("USER"), minimalUser.getRoles());
         // Estos campos tienen valores por defecto en la clase User
         assertTrue(minimalUser.getEnabled()); // @Builder.Default = true
         assertTrue(minimalUser.getAccountNonExpired()); // @Builder.Default = true
@@ -257,24 +259,30 @@ class UserPrincipalTest {
         assertTrue(minimalPrincipal.isAccountNonLocked(), "isAccountNonLocked() debe ser true (valor por defecto del User)");
         assertTrue(minimalPrincipal.isCredentialsNonExpired(), "isCredentialsNonExpired() debe ser true (valor por defecto del User)");
         
-        // Verificar authorities
+        // Verificar authorities - debe contener ROLE_USER por el valor por defecto
         Collection<? extends GrantedAuthority> authorities = minimalPrincipal.getAuthorities();
         assertNotNull(authorities, "getAuthorities() no debe devolver null");
-        assertTrue(authorities.isEmpty(), "getAuthorities() debe devolver una colección vacía para usuario sin roles");
+        assertEquals(1, authorities.size(), "debe tener 1 authority por el rol por defecto USER");
+        assertTrue(authorities.stream().anyMatch(auth -> "ROLE_USER".equals(auth.getAuthority())), "debe contener ROLE_USER");
     }
 
     @Test
     void testWithExplicitNullValues() {
-        // Crear un usuario con valores explícitamente null
+        // Crear un usuario con valores explícitamente null (evitando @Builder.Default)
         User nullUser = new User();
         nullUser.setId("null-user");
         nullUser.setUsername("nulluser");
+        nullUser.setRoles(null); // Explícitamente null para evitar valor por defecto
         nullUser.setEnabled(null);
+        nullUser.setAccountNonExpired(null);
+        nullUser.setAccountNonLocked(null);
+        nullUser.setCredentialsNonExpired(null);
         nullUser.setAccountNonExpired(null);
         nullUser.setAccountNonLocked(null);
         nullUser.setCredentialsNonExpired(null);
         
         // Verificar que efectivamente son null
+        assertNull(nullUser.getRoles());
         assertNull(nullUser.getEnabled());
         assertNull(nullUser.getAccountNonExpired());
         assertNull(nullUser.getAccountNonLocked());
