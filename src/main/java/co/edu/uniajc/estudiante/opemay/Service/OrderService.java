@@ -1,6 +1,6 @@
 package co.edu.uniajc.estudiante.opemay.Service;
 
-import java.time.LocalDateTime;
+import com.google.cloud.Timestamp;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -37,7 +37,7 @@ public class OrderService {
         
         // Obtener el carrito
         Cart cart = cartRepository.getCartById(cartId);
-        if (cart == null || !cart.isActive()) {
+        if (cart == null || !cart.getActive()) {
             throw new IllegalArgumentException("Carrito no encontrado o inactivo");
         }
 
@@ -48,8 +48,8 @@ public class OrderService {
         // Validar stock de todos los productos
         for (CartItem cartItem : cart.getItems()) {
             Product product = productRepository.getProductById(cartItem.getProductId());
-            if (product == null || !product.isActive()) {
-                throw new IllegalArgumentException("Producto no disponible: " + cartItem.getProductName());
+            if (product == null || !product.getActive()) {
+                throw new IllegalArgumentException("Producto no encontrado o inactivo: " + cartItem.getProductId());
             }
             if (product.getStock() < cartItem.getQuantity()) {
                 throw new IllegalArgumentException("Stock insuficiente para: " + cartItem.getProductName());
@@ -61,7 +61,7 @@ public class OrderService {
         order.setId(UUID.randomUUID().toString());
         order.setUserId(cart.getUserId());
         order.setStatus("PENDING");
-        order.setCreatedAt(LocalDateTime.now());
+        order.setCreatedAt(Timestamp.now());
         order.setDeliveryAddress(deliveryAddress);
         order.setPaymentMethod(paymentMethod);
         order.setPaymentStatus("PENDING");
@@ -71,13 +71,15 @@ public class OrderService {
         for (CartItem cartItem : cart.getItems()) {
             Product product = productRepository.getProductById(cartItem.getProductId());
             
-            OrderItem orderItem = new OrderItem();
-            orderItem.setId(UUID.randomUUID().toString());
-            orderItem.setProductId(cartItem.getProductId());
-            orderItem.setProductName(cartItem.getProductName());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(cartItem.getPrice());
-            orderItem.setImageUrl(product.getImageUrl());
+            OrderItem orderItem = OrderItem.builder()
+                    .id(UUID.randomUUID().toString())
+                    .orderId(order.getId())
+                    .productId(cartItem.getProductId())
+                    .productName(cartItem.getProductName())
+                    .quantity(cartItem.getQuantity())
+                    .price(cartItem.getPrice())
+                    .imageUrl(product.getImageUrl())
+                    .build();
             
             order.getItems().add(orderItem);
         }
@@ -96,7 +98,8 @@ public class OrderService {
         }
 
         // Marcar carrito como completado
-        cart.completeCart();
+        cart.setStatus("COMPLETED");
+        cart.setUpdatedAt(Timestamp.now());
         cartRepository.update(cart);
 
         log.info("Orden creada exitosamente con ID: {}", order.getId());
@@ -155,20 +158,20 @@ public class OrderService {
         // Actualizar timestamps según el estado
         switch (newStatus) {
             case "CONFIRMED":
-                order.setConfirmedAt(LocalDateTime.now());
+                order.setConfirmedAt(Timestamp.now());
                 break;
             case "PROCESSING":
-                order.setProcessingAt(LocalDateTime.now());
+                order.setProcessingAt(Timestamp.now());
                 break;
             case "SHIPPED":
-                order.setShippedAt(LocalDateTime.now());
+                order.setShippedAt(Timestamp.now());
                 break;
             case "DELIVERED":
-                order.setDeliveredAt(LocalDateTime.now());
+                order.setDeliveredAt(Timestamp.now());
                 order.setPaymentStatus("COMPLETED");
                 break;
             case "CANCELLED":
-                order.setCancelledAt(LocalDateTime.now());
+                order.setCancelledAt(Timestamp.now());
                 // Restaurar stock si la orden se cancela antes de enviar
                 if (List.of("PENDING", "CONFIRMED", "PROCESSING").contains(order.getStatus())) {
                     restoreStock(order);
@@ -200,7 +203,7 @@ public class OrderService {
         }
 
         order.updateStatus("CANCELLED");
-        order.setCancelledAt(LocalDateTime.now());
+        order.setCancelledAt(Timestamp.now());
         order.setCancelReason(reason);
 
         // Restaurar stock
@@ -226,7 +229,7 @@ public class OrderService {
 
         order.setPaymentStatus(paymentStatus);
         if ("COMPLETED".equals(paymentStatus)) {
-            order.setPaidAt(LocalDateTime.now());
+            order.setPaidAt(Timestamp.now());
         }
 
         orderRepository.update(order);
