@@ -44,7 +44,7 @@ class CartControllerTest {
     }
 
     @Test
-    void testCartServiceMocking() {
+    void testCartServiceMocking() throws Exception {
         // Test simple para verificar que el servicio se puede mockear
         when(cartService.getActiveCart(anyString())).thenReturn(testCart);
         
