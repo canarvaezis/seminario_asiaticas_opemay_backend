@@ -93,10 +93,19 @@ public class Order {
     }
     
     /**
-     * Actualiza el estado de la orden
+     * Actualiza el estado de la orden con enum
+     */
+    public void setStatus(OrderStatus newStatus) {
+        this.status = newStatus;
+        this.updatedAt = Timestamp.now();
+    }
+    
+    /**
+     * Actualiza el estado de la orden con String
      */
     public void setStatus(String newStatus) {
         this.status = OrderStatus.valueOf(newStatus);
+        this.updatedAt = Timestamp.now();
     }
 
     public void updateStatus(String newStatus) {
