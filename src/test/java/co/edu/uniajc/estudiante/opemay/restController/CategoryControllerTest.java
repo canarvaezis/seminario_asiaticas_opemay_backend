@@ -161,7 +161,7 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.name").value("Test Category"))
                 .andExpect(jsonPath("$.description").value("Test category description"));
 
-        verify(categoryService).createCategory(any(CreateCategoryRequest.class));
+        verify(categoryService).createCategory(any(CategoryCreateDTO.class));
     }
 
     @Test
@@ -175,7 +175,7 @@ class CategoryControllerTest {
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpected(status().isInternalServerError());
+                .andExpect(status().isInternalServerError());
 
         verify(categoryService).createCategory(any(CategoryCreateDTO.class));
     }

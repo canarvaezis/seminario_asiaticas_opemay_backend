@@ -132,7 +132,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.error").exists());
 
         verify(userService).getUserByUsername("testuser");
-        verify(orderService, never()).createOrderFromCart(anyString(), anyString(), any(OrderCreateDTO.class));
+        verify(orderService, never()).createOrderFromCart(anyString(), anyString(), any(CreateOrderRequest.class));
     }
 
     @Test
@@ -140,7 +140,7 @@ class OrderControllerTest {
     void testCreateOrder_ExecutionException() throws Exception {
         // Arrange
         when(userService.getUserByUsername("testuser")).thenReturn(testUser);
-        when(orderService.createOrderFromCart(anyString(), anyString(), any(OrderCreateDTO.class)))
+        when(orderService.createOrderFromCart(anyString(), anyString(), any(CreateOrderRequest.class)))
                 .thenThrow(new ExecutionException("Database error", new RuntimeException()));
 
         // Act & Assert
@@ -151,7 +151,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.error").exists());
 
         verify(userService).getUserByUsername("testuser");
-        verify(orderService).createOrderFromCart(anyString(), anyString(), any(OrderCreateDTO.class));
+        verify(orderService).createOrderFromCart(anyString(), anyString(), any(CreateOrderRequest.class));
     }
 
     @Test

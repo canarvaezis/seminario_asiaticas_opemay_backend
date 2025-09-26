@@ -19,7 +19,7 @@ class OrderTest {
                 .status(OrderStatus.PENDING)
                 .active(true)
                 .paymentMethod("CREDIT_CARD")
-                .paymentStatus("PENDING")
+                .paymentStatus(PaymentStatus.PENDING)
                 .deliveryAddress("123 Test Street")
                 .build();
         order.setCreatedAt(Timestamp.now());
