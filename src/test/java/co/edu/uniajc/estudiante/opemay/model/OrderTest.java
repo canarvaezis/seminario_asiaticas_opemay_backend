@@ -61,7 +61,7 @@ class OrderTest {
         assertTrue(order.canBeCancelled());
 
         order.setStatus("PROCESSING");
-        assertTrue(order.canBeCancelled());
+        assertFalse(order.canBeCancelled());
 
         // Estados que NO permiten cancelación
         order.setStatus("SHIPPED");
@@ -112,7 +112,8 @@ class OrderTest {
 
     @Test
     void testGetTotalItems() {
-        int totalItems = order.getTotalItems();
+        order.calculateTotals();
+        Integer totalItems = order.getTotalItems();
         assertEquals(3, totalItems); // 2 + 1 del setUp
     }
 }

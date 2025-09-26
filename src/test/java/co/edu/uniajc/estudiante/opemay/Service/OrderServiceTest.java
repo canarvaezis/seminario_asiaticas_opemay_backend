@@ -60,6 +60,8 @@ class OrderServiceTest {
                 .quantity(2)
                 .price(25.00)
                 .build();
+        
+        testCart.getItems().add(cartItem);
 
         // Setup test product
         testProduct = new Product();
