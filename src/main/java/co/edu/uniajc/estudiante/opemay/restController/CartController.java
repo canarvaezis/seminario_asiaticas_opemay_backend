@@ -3,7 +3,7 @@ package co.edu.uniajc.estudiante.opemay.restController;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
