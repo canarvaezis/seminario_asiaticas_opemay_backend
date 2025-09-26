@@ -164,7 +164,7 @@ public class OrderRepository {
         Order order = getOrderById(id);
         if (order != null) {
             order.setActive(false);
-            order.setStatus(OrderStatus.CANCELLED);
+            order.setStatus(OrderStatus.CANCELLED.name());
             return update(order);
         }
         

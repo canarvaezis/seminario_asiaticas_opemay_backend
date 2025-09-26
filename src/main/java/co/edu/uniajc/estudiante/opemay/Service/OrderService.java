@@ -63,11 +63,11 @@ public class OrderService {
         Order order = new Order();
         order.setId(UUID.randomUUID().toString());
         order.setUserId(cart.getUserId());
-        order.setStatus("PENDING");
+        order.setStatus(OrderStatus.PENDING);
         order.setCreatedAt(Timestamp.now());
         order.setDeliveryAddress(deliveryAddress);
         order.setPaymentMethod(paymentMethod);
-        order.setPaymentStatus("PENDING");
+        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setActive(true);
 
         // Convertir items del carrito a items de orden
@@ -149,7 +149,7 @@ public class OrderService {
         }
 
         // Validar transición de estado
-        if (!isValidStatusTransition(order.getStatus().name(), newStatus.name())) {
+        if (!isValidStatusTransition(order.getStatus().name(), newStatus)) {
             throw new IllegalArgumentException("Transición de estado no válida: " + 
                 order.getStatus() + " -> " + newStatus);
         }
@@ -169,7 +169,7 @@ public class OrderService {
                 break;
             case "DELIVERED":
                 order.setDeliveredAt(Timestamp.now());
-                order.setPaymentStatus(PaymentStatus.COMPLETED.name());
+                order.setPaymentStatus(PaymentStatus.PAID);
                 break;
             case "CANCELLED":
                 order.updateStatus("CANCELLED");
@@ -227,9 +227,9 @@ public class OrderService {
             throw new IllegalArgumentException("Orden no encontrada");
         }
 
-        order.setPaymentStatus(paymentStatus);
+        order.setPaymentStatus(PaymentStatus.valueOf(paymentStatus));
         if ("COMPLETED".equals(paymentStatus)) {
-            order.setPaymentStatus("PAID");
+            order.setPaymentStatus(PaymentStatus.PAID);
             order.setUpdatedAt(Timestamp.now());
         }
 
@@ -396,6 +396,11 @@ public class OrderService {
     public Order createOrderFromCart(String cartId, String userId, CreateOrderRequest request) 
             throws ExecutionException, InterruptedException {
         return createOrder(cartId, userId, request.getShippingAddress(), request.getPaymentMethod());
+    }
+
+    public Order createOrder(String cartId, String userId, String shippingAddress, String paymentMethod)
+            throws ExecutionException, InterruptedException {
+        return createOrderFromCart(cartId, shippingAddress, paymentMethod);
     }
 
     public Order updateOrderStatus(String orderId, OrderStatus newStatus) 
