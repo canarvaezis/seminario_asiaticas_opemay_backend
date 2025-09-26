@@ -21,7 +21,8 @@ public class Category {
     private String name;
     private String description;
     private String imageUrl;
-    private Integer sortOrder;
+    private String slug; // URL friendly name
+    private Integer sortOrder; // Para ordenamiento personalizado
     
     @Builder.Default
     private Boolean active = true;
@@ -35,6 +36,27 @@ public class Category {
      * Valida que la categoría tenga los datos mínimos requeridos
      */
     public boolean isValid() {
-        return name != null && !name.trim().isEmpty();
+        return name != null && !name.trim().isEmpty() &&
+               description != null && !description.trim().isEmpty();
+    }
+    
+    /**
+     * Actualiza el timestamp de modificación
+     */
+    public void updateTimestamp() {
+        this.updatedAt = Timestamp.now();
+    }
+    
+    /**
+     * Genera un slug basado en el nombre si no existe
+     */
+    public void generateSlugFromName() {
+        if (this.slug == null || this.slug.trim().isEmpty()) {
+            this.slug = this.name
+                .toLowerCase()
+                .trim()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-|-$", "");
+        }
     }
 }

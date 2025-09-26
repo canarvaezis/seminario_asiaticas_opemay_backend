@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
@@ -402,5 +404,54 @@ public class ProductService {
         log.warn("Tipo de timestamp no reconocido: {}, usando timestamp actual", 
                 timestampObj.getClass().getSimpleName());
         return Timestamp.now();
+    }
+
+    /**
+     * Obtiene productos por categoría con Circuit Breaker
+     * 
+     * @param categoryId ID de la categoría
+     * @return lista de productos de la categoría
+     */
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getProductsByCategoryFallback")
+    public List<Product> getProductsByCategory(String categoryId) {
+        if (categoryId == null || categoryId.trim().isEmpty()) {
+            throw new IllegalArgumentException("ID de categoría no puede estar vacío");
+        }
+        
+        try {
+            log.info("Obteniendo productos para categoría: {}", categoryId);
+            
+            ApiFuture<QuerySnapshot> future = firestore.collection(PRODUCTS_COLLECTION)
+                    .whereEqualTo("categoryId", categoryId)
+                    .whereEqualTo("active", true)
+                    .orderBy("name", Query.Direction.ASCENDING)
+                    .get();
+            
+            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+            List<Product> products = documents.stream()
+                    .map(this::convertDocumentToProduct)
+                    .filter(product -> product != null)
+                    .collect(Collectors.toList());
+            
+            log.info("Encontrados {} productos para categoría {}", products.size(), categoryId);
+            return products;
+            
+        } catch (InterruptedException e) {
+            log.error("Operación interrumpida obteniendo productos por categoría: {}", categoryId);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Error obteniendo productos por categoría: " + categoryId, e);
+        } catch (ExecutionException e) {
+            log.error("Error ejecutando consulta para categoría {}: {}", categoryId, e.getMessage());
+            throw new RuntimeException("Error obteniendo productos por categoría: " + categoryId, e);
+        }
+    }
+
+    /**
+     * Fallback para getProductsByCategory
+     */
+    public List<Product> getProductsByCategoryFallback(String categoryId, Exception e) {
+        log.warn("Fallback activado para getProductsByCategory con categoría: {}. Error: {}", 
+                categoryId, e.getMessage());
+        return new ArrayList<>();
     }
 }
