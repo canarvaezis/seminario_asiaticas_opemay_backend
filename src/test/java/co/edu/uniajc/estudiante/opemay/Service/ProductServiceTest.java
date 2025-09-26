@@ -83,7 +83,6 @@ class ProductServiceTest {
                 .name("Test Product")
                 .description("Test Description")
                 .price(99.99)
-                .category("Test Category")
                 .imageUrl("test-image.jpg")
                 .stock(10)
                 .active(true)

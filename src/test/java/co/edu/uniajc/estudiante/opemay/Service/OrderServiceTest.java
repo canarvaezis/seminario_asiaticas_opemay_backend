@@ -50,16 +50,16 @@ class OrderServiceTest {
         testCart.setId("cart-123");
         testCart.setUserId("user-123");
         testCart.setActive(true);
-        testCart.setCreatedAt(LocalDateTime.now());
+        testCart.setCreatedAt(Timestamp.now());
 
         // Setup cart item
-        CartItem cartItem = new CartItem();
-        cartItem.setId("item-123");
-        cartItem.setProductId("product-123");
-        cartItem.setProductName("Test Product");
-        cartItem.setQuantity(2);
-        cartItem.setPrice(25.00);
-        testCart.getItems().add(cartItem);
+        CartItem cartItem = CartItem.builder()
+                .cartId("cart-123")
+                .productId("product-123")
+                .productName("Test Product")
+                .quantity(2)
+                .unitPrice(25.00)
+                .build();
 
         // Setup test product
         testProduct = new Product();
@@ -75,7 +75,7 @@ class OrderServiceTest {
         testOrder.setId("order-123");
         testOrder.setUserId("user-123");
         testOrder.setStatus("PENDING");
-        testOrder.setCreatedAt(LocalDateTime.now());
+        testOrder.setCreatedAt(Timestamp.now());
         testOrder.setActive(true);
     }
 
@@ -98,7 +98,7 @@ class OrderServiceTest {
         assertEquals(1, result.getItems().size());
         
         verify(orderRepository).save(any(Order.class));
-        verify(productRepository).update(testProduct);
+        verify(productRepository).save(testProduct);
         verify(cartRepository).update(testCart);
     }
 
@@ -198,8 +198,9 @@ class OrderServiceTest {
 
         // Then
         assertEquals("CANCELLED", result.getStatus());
-        assertEquals("Usuario cambió de opinión", result.getCancelReason());
-        assertNotNull(result.getCancelledAt());
+        assertEquals(OrderStatus.CANCELLED, result.getStatus());
+        // Verificar que la orden fue actualizada
+        assertNotNull(result.getUpdatedAt());
         verify(orderRepository).update(testOrder);
     }
 

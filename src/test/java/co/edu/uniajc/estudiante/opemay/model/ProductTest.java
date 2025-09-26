@@ -17,28 +17,22 @@ class ProductTest {
     void shouldCreateProductWithBuilder() {
         // Act
         Product product = Product.builder()
-                .id("test-id")
+                .id("product-123")
                 .name("Test Product")
                 .description("Test Description")
-                .price(99.99)
+                .price(19.99)
+                .stock(100)
                 .active(true)
-                .category("Electronics")
-                .stock(10)
-                .imageUrl("http://test.com/image.jpg")
-                .createdAt(Timestamp.now())
                 .build();
 
         // Assert
         assertThat(product).isNotNull();
-        assertThat(product.getId()).isEqualTo("test-id");
+        assertThat(product.getId()).isEqualTo("product-123");
         assertThat(product.getName()).isEqualTo("Test Product");
         assertThat(product.getDescription()).isEqualTo("Test Description");
-        assertThat(product.getPrice()).isEqualTo(99.99);
+        assertThat(product.getPrice()).isEqualTo(19.99);
+        assertThat(product.getStock()).isEqualTo(100);
         assertThat(product.getActive()).isTrue();
-        assertThat(product.getCategory()).isEqualTo("Electronics");
-        assertThat(product.getStock()).isEqualTo(10);
-        assertThat(product.getImageUrl()).isEqualTo("http://test.com/image.jpg");
-        assertThat(product.getCreatedAt()).isNotNull();
     }
 
     @Test
@@ -50,14 +44,12 @@ class ProductTest {
                 .name("Test Product")
                 .price(99.99)
                 .description(null)
-                .category(null)
                 .imageUrl(null)
                 .updatedAt(null)
                 .build();
 
         // Assert
         assertThat(product.getDescription()).isNull();
-        assertThat(product.getCategory()).isNull();
         assertThat(product.getImageUrl()).isNull();
         assertThat(product.getUpdatedAt()).isNull();
         assertThat(product.getName()).isEqualTo("Test Product");

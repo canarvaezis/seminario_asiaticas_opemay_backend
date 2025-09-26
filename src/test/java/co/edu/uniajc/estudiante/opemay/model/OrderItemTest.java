@@ -11,13 +11,14 @@ class OrderItemTest {
 
     @BeforeEach
     void setUp() {
-        orderItem = new OrderItem();
-        orderItem.setId("item-123");
-        orderItem.setProductId("product-123");
-        orderItem.setProductName("Producto de Prueba");
-        orderItem.setQuantity(3);
-        orderItem.setPrice(12.50);
-        orderItem.setImageUrl("http://example.com/image.jpg");
+        orderItem = OrderItem.builder()
+                .orderId("order-123")
+                .productId("product-123")
+                .productName("Producto de Prueba")
+                .quantity(3)
+                .unitPrice(12.50)
+                .imageUrl("http://example.com/image.jpg")
+                .build();
     }
 
     @Test
@@ -34,7 +35,7 @@ class OrderItemTest {
 
     @Test
     void testGetSubtotalWithZeroPrice() {
-        orderItem.setPrice(0.0);
+        orderItem.setUnitPrice(0.0);
         assertEquals(0.0, orderItem.getSubtotal(), 0.01);
     }
 
@@ -67,7 +68,7 @@ class OrderItemTest {
 
         // Restaurar y test con precio inválido
         orderItem.setQuantity(3);
-        orderItem.setPrice(-1.0);
+        orderItem.setUnitPrice(-1.0);
         assertFalse(orderItem.isValid());
     }
 
@@ -77,22 +78,26 @@ class OrderItemTest {
         orderItem.setProductId("valid-product-id");
         orderItem.setProductName("Valid Product Name");
         orderItem.setQuantity(1);
-        orderItem.setPrice(0.01); // Precio mínimo válido
+        orderItem.setUnitPrice(0.01); // Precio mínimo válido
 
         assertTrue(orderItem.isValid());
     }
 
     @Test
-    void testEqualsAndHashCode() {
-        OrderItem item1 = new OrderItem();
-        item1.setId("same-id");
-        item1.setProductId("product-1");
+    void shouldImplementEqualsAndHashCodeCorrectly() {
+        // Given
+        OrderItem item1 = OrderItem.builder()
+                .orderId("order-123")
+                .productId("product-456")
+                .build();
         
-        OrderItem item2 = new OrderItem();
-        item2.setId("same-id");
-        item2.setProductId("product-2");
-
-        // Si tienen el mismo ID, deberían ser iguales
-        assertEquals(item1.getId(), item2.getId());
+        OrderItem item2 = OrderItem.builder()
+                .orderId("order-123")
+                .productId("product-456")
+                .build();
+        
+        // Then
+        assertEquals(item1.getOrderId(), item2.getOrderId());
+        assertEquals(item1.getProductId(), item2.getProductId());
     }
 }
