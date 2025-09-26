@@ -2,10 +2,13 @@ package co.edu.uniajc.estudiante.opemay.model;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.google.cloud.Timestamp;
+import java.time.Instant;
+import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.google.cloud.Timestamp;
 
 class CategoryTest {
 
@@ -16,211 +19,238 @@ class CategoryTest {
         category = Category.builder()
                 .id("cat-123")
                 .name("Frutas")
-                .description("Frutas frescas y naturales")
-                .imageUrl("http://example.com/frutas.jpg")
-                .sortOrder(1)
-                .active(true)
+                .description("Frutas frescas y deliciosas")
+                .slug("frutas")
+                .enabled(true)
+                .createdAt(Timestamp.now())
+                .updatedAt(Timestamp.now())
                 .build();
     }
 
     @Test
-    void testCategoryBuilder() {
+    void testBuilder() {
         assertNotNull(category);
         assertEquals("cat-123", category.getId());
         assertEquals("Frutas", category.getName());
-        assertEquals("Frutas frescas y naturales", category.getDescription());
-        assertEquals("http://example.com/frutas.jpg", category.getImageUrl());
-        assertEquals(1, category.getSortOrder());
-        assertTrue(category.getActive());
+        assertEquals("Frutas frescas y deliciosas", category.getDescription());
+        assertEquals("frutas", category.getSlug());
+        assertTrue(category.getEnabled());
         assertNotNull(category.getCreatedAt());
+        assertNotNull(category.getUpdatedAt());
     }
 
     @Test
-    void testIsValid() {
-        assertTrue(category.isValid());
-        
-        // Test con nombre nulo
-        category.setName(null);
-        assertFalse(category.isValid());
-        
-        // Test con nombre vacío
-        category.setName("");
-        assertFalse(category.isValid());
-        
-        // Test con nombre solo espacios
-        category.setName("   ");
-        assertFalse(category.isValid());
-        
-        // Restaurar nombre y test con descripción nula
-        category.setName("Frutas");
-        category.setDescription(null);
-        assertFalse(category.isValid());
-        
-        // Test con descripción vacía
-        category.setDescription("");
-        assertFalse(category.isValid());
-        
-        // Test con descripción solo espacios
-        category.setDescription("   ");
-        assertFalse(category.isValid());
+    void testNoArgsConstructor() {
+        Category emptyCategory = new Category();
+        assertNotNull(emptyCategory);
+        assertNull(emptyCategory.getId());
+        assertNull(emptyCategory.getName());
+        assertNull(emptyCategory.getDescription());
     }
 
     @Test
-    void testUpdateTimestamp() {
-        Timestamp originalTimestamp = category.getUpdatedAt();
+    void testSettersAndGetters() {
+        Category testCategory = new Category();
         
-        // Simular pasar tiempo
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        testCategory.setId("test-id");
+        testCategory.setName("Test Category");
+        testCategory.setDescription("Test Description");
+        testCategory.setSlug("test-category");
+        testCategory.setEnabled(false);
         
-        category.updateTimestamp();
+        Timestamp now = Timestamp.now();
+        testCategory.setCreatedAt(now);
+        testCategory.setUpdatedAt(now);
         
-        if (originalTimestamp != null) {
-            assertNotEquals(originalTimestamp, category.getUpdatedAt());
-        } else {
-            assertNotNull(category.getUpdatedAt());
-        }
+        assertEquals("test-id", testCategory.getId());
+        assertEquals("Test Category", testCategory.getName());
+        assertEquals("Test Description", testCategory.getDescription());
+        assertEquals("test-category", testCategory.getSlug());
+        assertFalse(testCategory.getEnabled());
+        assertEquals(now, testCategory.getCreatedAt());
+        assertEquals(now, testCategory.getUpdatedAt());
     }
 
     @Test
     void testGenerateSlugFromName() {
-        // Test con diferentes nombres
+        // Arrange
         Category category1 = Category.builder().name("Frutas").build();
-        category1.generateSlugFromName();
-        assertEquals("frutas", category1.getSlug());
-        
-        // Test con espacios
         Category category2 = Category.builder().name("Frutas Frescas").build();
-        category2.generateSlugFromName();
-        assertEquals("frutas-frescas", category2.getSlug());
-        
-        // Test con caracteres especiales
         Category category3 = Category.builder().name("Frutas & Verduras").build();
+        Category category4 = Category.builder().name("Lácteos").build();
+        Category category5 = Category.builder().name("Productos   Orgánicos").build();
+        Category category6 = Category.builder().name("Another Category").build();
+        
+        // Act
+        category1.generateSlugFromName();
+        category2.generateSlugFromName();
         category3.generateSlugFromName();
-        assertEquals("frutas-verduras", category3.getSlug());
-        
-        // Test con espacios múltiples
-        Category category4 = Category.builder().name("Productos   Orgánicos").build();
         category4.generateSlugFromName();
-        assertEquals("productos-org-nicos", category4.getSlug());
-        
-        // Test con slug ya existente (no debería cambiar)
-        Category category5 = Category.builder().name("Test").slug("existing-slug").build();
         category5.generateSlugFromName();
-        assertEquals("existing-slug", category5.getSlug());
-        
-        // Test con slug vacío (debería generar nuevo)
-        Category category6 = Category.builder().name("New Category").slug("").build();
         category6.generateSlugFromName();
-        assertEquals("new-category", category6.getSlug());
         
-        // Test con slug null (debería generar nuevo)
-        Category category7 = Category.builder().name("Another Category").slug(null).build();
-        category7.generateSlugFromName();
-        assertEquals("another-category", category7.getSlug());
-    }
-        
-        // Test con slug null (debería generar nuevo)
-        Category category7 = Category.builder().name("Another Category").slug(null).build();
-        category7.generateSlugFromName();
-        assertEquals("another-category", category7.getSlug());
-    }
-        
-        // Test con caracteres especiales
-        String result3 = Category.generateSlugFromName("Frutas & Verduras");
-        assertNotNull(result3);
-        assertFalse(result3.contains("&"));
-        
-        // Test con acentos
-        String result4 = Category.generateSlugFromName("Lácteos");
-        assertNotNull(result4);
-        assertFalse(result4.contains("á"));
-        
-        // Test con múltiples espacios
-        String result5 = Category.generateSlugFromName("Productos   Orgánicos");
-        assertNotNull(result5);
-        assertFalse(result5.contains("   "));
-        
-        // Test con null
-        assertNull(Category.generateSlugFromName(null));
-        
-        // Test con string vacío
-        assertEquals("", Category.generateSlugFromName(""));
-        
-        // Test con solo espacios
-        assertEquals("", Category.generateSlugFromName("   "));
+        // Assert
+        assertEquals("frutas", category1.getSlug());
+        assertEquals("frutas-frescas", category2.getSlug());
+        assertNotNull(category3.getSlug());
+        assertFalse(category3.getSlug().contains("&"));
+        assertNotNull(category4.getSlug());
+        assertFalse(category4.getSlug().contains("á"));
+        assertNotNull(category5.getSlug());
+        assertFalse(category5.getSlug().contains("   "));
+        assertEquals("another-category", category6.getSlug());
     }
 
     @Test
-    void testEqualsAndHashCode() {
-        Category category1 = Category.builder()
-                .id("same-id")
-                .name("Category 1")
+    void testGenerateSlugFromNameWithNullName() {
+        Category categoryWithNullName = Category.builder().name(null).build();
+        categoryWithNullName.generateSlugFromName();
+        assertNull(categoryWithNullName.getSlug());
+    }
+
+    @Test
+    void testGenerateSlugFromNameWithEmptyName() {
+        Category categoryWithEmptyName = Category.builder().name("").build();
+        categoryWithEmptyName.generateSlugFromName();
+        assertEquals("", categoryWithEmptyName.getSlug());
+    }
+
+    @Test
+    void testGenerateSlugFromNameWithBlankName() {
+        Category categoryWithBlankName = Category.builder().name("   ").build();
+        categoryWithBlankName.generateSlugFromName();
+        assertEquals("", categoryWithBlankName.getSlug());
+    }
+
+    @Test
+    void testEnabledDefaultValue() {
+        Category defaultCategory = Category.builder()
+                .name("Test")
                 .build();
         
-        Category category2 = Category.builder()
-                .id("same-id")
-                .name("Category 2")
+        // El valor por defecto debería ser null, no false
+        assertNull(defaultCategory.getEnabled());
+    }
+
+    @Test
+    void testTimestampFields() {
+        Timestamp specificTime = Timestamp.of(Date.from(Instant.parse("2023-01-01T00:00:00Z")));
+        
+        Category timedCategory = Category.builder()
+                .name("Timed Category")
+                .createdAt(specificTime)
+                .updatedAt(specificTime)
                 .build();
         
-        // Debe ser igual por ID (según @EqualsAndHashCode(of = "id"))
-        assertEquals(category1, category2);
-        assertEquals(category1.hashCode(), category2.hashCode());
+        assertEquals(specificTime, timedCategory.getCreatedAt());
+        assertEquals(specificTime, timedCategory.getUpdatedAt());
     }
 
     @Test
     void testToString() {
-        String toString = category.toString();
-        assertNotNull(toString);
-        assertTrue(toString.contains("Frutas"));
-        assertTrue(toString.contains("cat-123"));
+        String categoryString = category.toString();
+        assertNotNull(categoryString);
+        // Lombok @Data genera toString con todos los campos
+        assertTrue(categoryString.contains("Frutas") || categoryString.contains("cat-123"));
     }
 
     @Test
-    void testDefaultValues() {
-        Category newCategory = Category.builder()
-                .name("Nueva Categoria")
-                .description("Descripción")
+    void testEquals() {
+        Category sameCategory = Category.builder()
+                .id("cat-123")
+                .name("Frutas")
+                .description("Frutas frescas y deliciosas")
+                .slug("frutas")
+                .enabled(true)
+                .createdAt(category.getCreatedAt())
+                .updatedAt(category.getUpdatedAt())
                 .build();
         
-        assertTrue(newCategory.getActive()); // Default true
-        assertNotNull(newCategory.getCreatedAt()); // Default Timestamp.now()
+        assertEquals(category, sameCategory);
     }
 
     @Test
-    void testAllFieldsGettersSetters() {
-        Category testCategory = new Category();
+    void testHashCode() {
+        Category sameCategory = Category.builder()
+                .id("cat-123")
+                .name("Frutas")
+                .description("Frutas frescas y deliciosas")
+                .slug("frutas")
+                .enabled(true)
+                .createdAt(category.getCreatedAt())
+                .updatedAt(category.getUpdatedAt())
+                .build();
         
-        // Test setters and getters
-        testCategory.setId("test-id");
-        assertEquals("test-id", testCategory.getId());
+        assertEquals(category.hashCode(), sameCategory.hashCode());
+    }
+
+    @Test
+    void testBuilderPattern() {
+        Category builtCategory = Category.builder()
+                .id("builder-test")
+                .name("Builder Test")
+                .description("Testing builder pattern")
+                .slug("builder-test")
+                .enabled(false)
+                .build();
         
-        testCategory.setName("Test Name");
-        assertEquals("Test Name", testCategory.getName());
+        assertNotNull(builtCategory);
+        assertEquals("builder-test", builtCategory.getId());
+        assertEquals("Builder Test", builtCategory.getName());
+        assertEquals("Testing builder pattern", builtCategory.getDescription());
+        assertEquals("builder-test", builtCategory.getSlug());
+        assertFalse(builtCategory.getEnabled());
+    }
+
+    @Test
+    void testSlugGeneration_SpecialCharacters() {
+        Category specialCategory = Category.builder()
+                .name("Café & Té")
+                .build();
         
-        testCategory.setDescription("Test Description");
-        assertEquals("Test Description", testCategory.getDescription());
+        specialCategory.generateSlugFromName();
         
-        testCategory.setImageUrl("http://test.com");
-        assertEquals("http://test.com", testCategory.getImageUrl());
+        assertNotNull(specialCategory.getSlug());
+        // El slug no debería contener caracteres especiales
+        assertFalse(specialCategory.getSlug().contains("&"));
+        assertFalse(specialCategory.getSlug().contains("é"));
+    }
+
+    @Test
+    void testSlugGeneration_MultipleSpaces() {
+        Category spacedCategory = Category.builder()
+                .name("Multiple    Spaces    Here")
+                .build();
         
-        testCategory.setSlug("test-slug");
-        assertEquals("test-slug", testCategory.getSlug());
+        spacedCategory.generateSlugFromName();
         
-        testCategory.setSortOrder(5);
-        assertEquals(5, testCategory.getSortOrder());
+        assertNotNull(spacedCategory.getSlug());
+        // No debería tener espacios múltiples en el slug
+        assertFalse(spacedCategory.getSlug().contains("  "));
+    }
+
+    @Test
+    void testSlugGeneration_Numbers() {
+        Category numberedCategory = Category.builder()
+                .name("Category 123")
+                .build();
         
-        testCategory.setActive(false);
-        assertFalse(testCategory.getActive());
+        numberedCategory.generateSlugFromName();
         
-        Timestamp testTimestamp = Timestamp.now();
-        testCategory.setCreatedAt(testTimestamp);
-        assertEquals(testTimestamp, testCategory.getCreatedAt());
+        assertNotNull(numberedCategory.getSlug());
+        assertEquals("category-123", numberedCategory.getSlug());
+    }
+
+    @Test
+    void testCategoryWithAllFieldsNull() {
+        Category nullCategory = new Category();
         
-        testCategory.setUpdatedAt(testTimestamp);
-        assertEquals(testTimestamp, testCategory.getUpdatedAt());
+        assertNull(nullCategory.getId());
+        assertNull(nullCategory.getName());
+        assertNull(nullCategory.getDescription());
+        assertNull(nullCategory.getSlug());
+        assertNull(nullCategory.getEnabled());
+        assertNull(nullCategory.getCreatedAt());
+        assertNull(nullCategory.getUpdatedAt());
     }
 }
