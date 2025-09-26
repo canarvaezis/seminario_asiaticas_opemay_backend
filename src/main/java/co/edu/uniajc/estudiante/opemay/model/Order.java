@@ -86,13 +86,6 @@ public class Order {
     }
     
     /**
-     * Verifica si la orden puede ser cancelada
-     */
-    public boolean canBeCancelled() {
-        return "PENDING".equals(status) || "CONFIRMED".equals(status);
-    }
-    
-    /**
      * Verifica si la orden puede ser modificada
      */
     public boolean canBeModified() {

@@ -17,6 +17,7 @@ import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 
 import co.edu.uniajc.estudiante.opemay.model.Order;
+import co.edu.uniajc.estudiante.opemay.model.OrderStatus;
 import lombok.extern.slf4j.Slf4j;
 
 @Repository
@@ -163,7 +164,7 @@ public class OrderRepository {
         Order order = getOrderById(id);
         if (order != null) {
             order.setActive(false);
-            order.setStatus(OrderStatus.CANCELLED.name());
+            order.setStatus(OrderStatus.CANCELLED);
             return update(order);
         }
         
