@@ -16,14 +16,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.uniajc.estudiante.opemay.Service.OrderService;
 import co.edu.uniajc.estudiante.opemay.Service.UserService;
+import co.edu.uniajc.estudiante.opemay.config.TestConfig;
 import co.edu.uniajc.estudiante.opemay.dto.CreateOrderRequest;
 import co.edu.uniajc.estudiante.opemay.dto.OrderCreateDTO;
 import co.edu.uniajc.estudiante.opemay.dto.UpdateOrderStatusRequest;
@@ -34,6 +38,11 @@ import co.edu.uniajc.estudiante.opemay.model.PaymentStatus;
 import co.edu.uniajc.estudiante.opemay.model.User;
 
 @WebMvcTest(OrderController.class)
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "firebase.enabled=false"
+})
+@Import(TestConfig.class)
 class OrderControllerTest {
 
     @Autowired
