@@ -1,0 +1,123 @@
+package co.edu.uniajc.estudiante.opemay.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.cloud.Timestamp;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+@EqualsAndHashCode(of = "id")
+public class Order {
+    
+    private String id;
+    private String userId;
+    private String userEmail;
+    private String userName;
+    
+    @Builder.Default
+    private List<OrderItem> items = new ArrayList<>();
+    
+    private Double totalAmount;
+    private Integer totalItems;
+    private Double shippingCost;
+    private Double discountAmount;
+    private String discountCode;
+    
+    @Builder.Default
+    private String status = "PENDING"; // PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+    
+    // Información de entrega
+    private String deliveryAddress;
+    private String deliveryCity;
+    private String deliveryPhone;
+    private String deliveryInstructions;
+    
+    // Información de pago
+    private String paymentMethod; // CASH, CARD, TRANSFER
+    private String paymentStatus; // PENDING, PAID, FAILED, REFUNDED
+    private String paymentReference;
+    
+    @Builder.Default
+    private Timestamp createdAt = Timestamp.now();
+    
+    private Timestamp updatedAt;
+    private Timestamp deliveryDate;
+    private Timestamp confirmedAt;
+    private Timestamp shippedAt;
+    private Timestamp deliveredAt;
+    
+    @Builder.Default
+    private Boolean active = true;
+    
+    /**
+     * Calcula el total de la orden
+     */
+    public void calculateTotals() {
+        if (items == null || items.isEmpty()) {
+            this.totalAmount = 0.0;
+            this.totalItems = 0;
+            return;
+        }
+        
+        double itemsTotal = items.stream()
+            .mapToDouble(item -> item.getPrice() * item.getQuantity())
+            .sum();
+            
+        this.totalItems = items.stream()
+            .mapToInt(OrderItem::getQuantity)
+            .sum();
+        
+        double shipping = shippingCost != null ? shippingCost : 0.0;
+        double discount = discountAmount != null ? discountAmount : 0.0;
+        
+        this.totalAmount = itemsTotal + shipping - discount;
+    }
+    
+    /**
+     * Verifica si la orden puede ser cancelada
+     */
+    public boolean canBeCancelled() {
+        return "PENDING".equals(status) || "CONFIRMED".equals(status);
+    }
+    
+    /**
+     * Verifica si la orden puede ser modificada
+     */
+    public boolean canBeModified() {
+        return "PENDING".equals(status);
+    }
+    
+    /**
+     * Actualiza el estado de la orden
+     */
+    public void updateStatus(String newStatus) {
+        this.status = newStatus;
+        this.updatedAt = Timestamp.now();
+        
+        // Actualizar timestamps específicos según el estado
+        switch (newStatus) {
+            case "CONFIRMED":
+                this.confirmedAt = Timestamp.now();
+                break;
+            case "SHIPPED":
+                this.shippedAt = Timestamp.now();
+                break;
+            case "DELIVERED":
+                this.deliveredAt = Timestamp.now();
+                break;
+            default:
+                break;
+        }
+    }
+}
