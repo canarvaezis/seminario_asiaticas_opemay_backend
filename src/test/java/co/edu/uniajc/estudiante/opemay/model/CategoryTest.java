@@ -87,15 +87,47 @@ class CategoryTest {
 
     @Test
     void testGenerateSlugFromName() {
-        // Test con nombre simple
-        String result1 = Category.generateSlugFromName("Frutas");
-        assertNotNull(result1);
-        assertTrue(result1.toLowerCase().contains("fruta") || result1.equals("frutas"));
+        // Test con diferentes nombres
+        Category category1 = Category.builder().name("Frutas").build();
+        category1.generateSlugFromName();
+        assertEquals("frutas", category1.getSlug());
         
         // Test con espacios
-        String result2 = Category.generateSlugFromName("Frutas Frescas");
-        assertNotNull(result2);
-        assertFalse(result2.contains(" "));
+        Category category2 = Category.builder().name("Frutas Frescas").build();
+        category2.generateSlugFromName();
+        assertEquals("frutas-frescas", category2.getSlug());
+        
+        // Test con caracteres especiales
+        Category category3 = Category.builder().name("Frutas & Verduras").build();
+        category3.generateSlugFromName();
+        assertEquals("frutas-verduras", category3.getSlug());
+        
+        // Test con espacios múltiples
+        Category category4 = Category.builder().name("Productos   Orgánicos").build();
+        category4.generateSlugFromName();
+        assertEquals("productos-org-nicos", category4.getSlug());
+        
+        // Test con slug ya existente (no debería cambiar)
+        Category category5 = Category.builder().name("Test").slug("existing-slug").build();
+        category5.generateSlugFromName();
+        assertEquals("existing-slug", category5.getSlug());
+        
+        // Test con slug vacío (debería generar nuevo)
+        Category category6 = Category.builder().name("New Category").slug("").build();
+        category6.generateSlugFromName();
+        assertEquals("new-category", category6.getSlug());
+        
+        // Test con slug null (debería generar nuevo)
+        Category category7 = Category.builder().name("Another Category").slug(null).build();
+        category7.generateSlugFromName();
+        assertEquals("another-category", category7.getSlug());
+    }
+        
+        // Test con slug null (debería generar nuevo)
+        Category category7 = Category.builder().name("Another Category").slug(null).build();
+        category7.generateSlugFromName();
+        assertEquals("another-category", category7.getSlug());
+    }
         
         // Test con caracteres especiales
         String result3 = Category.generateSlugFromName("Frutas & Verduras");
