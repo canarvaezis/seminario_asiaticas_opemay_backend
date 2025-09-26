@@ -29,14 +29,14 @@ class OrderTest {
                 .productId("product-1")
                 .productName("Producto 1")
                 .quantity(2)
-                .unitPrice(10.00)
+                .price(10.00)
                 .build();
 
         OrderItem item2 = OrderItem.builder()
                 .productId("product-2")
                 .productName("Producto 2")
                 .quantity(1)
-                .unitPrice(15.00)
+                .price(15.00)
                 .build();
 
         order.getItems().add(item1);
