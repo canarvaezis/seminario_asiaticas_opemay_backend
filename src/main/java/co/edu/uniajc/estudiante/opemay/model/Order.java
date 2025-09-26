@@ -102,23 +102,16 @@ public class Order {
     /**
      * Actualiza el estado de la orden
      */
+    public void setStatus(String newStatus) {
+        this.status = OrderStatus.valueOf(newStatus);
+    }
+
     public void updateStatus(String newStatus) {
-        this.status = newStatus;
+        setStatus(newStatus);
         this.updatedAt = Timestamp.now();
-        
-        // Actualizar timestamps específicos según el estado
-        switch (newStatus) {
-            case "CONFIRMED":
-                this.confirmedAt = Timestamp.now();
-                break;
-            case "SHIPPED":
-                this.shippedAt = Timestamp.now();
-                break;
-            case "DELIVERED":
-                this.deliveredAt = Timestamp.now();
-                break;
-            default:
-                break;
-        }
+    }
+
+    public boolean canBeCancelled() {
+        return List.of(OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PROCESSING).contains(this.status);
     }
 }

@@ -187,12 +187,14 @@ public class CategoryService {
     }
 
     // Métodos compatibles para los tests
-    public String createCategory(CategoryCreateDTO dto) {
-        return createCategory(dto.getName(), dto.getDescription(), dto.getSlug());
+    public Category createCategory(CategoryCreateDTO dto) throws ExecutionException, InterruptedException {
+        createCategory(dto.getName(), dto.getDescription(), dto.getSlug(), 0);
+        return getCategoryBySlug(dto.getSlug());
     }
 
-    public String updateCategory(String categoryId, CategoryUpdateDTO dto) {
-        return updateCategory(categoryId, dto.getName(), dto.getDescription(), dto.getSlug());
+    public Category updateCategory(String categoryId, CategoryUpdateDTO dto) throws ExecutionException, InterruptedException {
+        updateCategory(categoryId, dto.getName(), dto.getDescription(), dto.getSlug(), 0);
+        return getCategoryById(categoryId);
     }
 
     public Category getCategoryBySlug(String slug) throws ExecutionException, InterruptedException {

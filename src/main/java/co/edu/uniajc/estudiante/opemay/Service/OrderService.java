@@ -149,7 +149,7 @@ public class OrderService {
         }
 
         // Validar transición de estado
-        if (!isValidStatusTransition(order.getStatus(), newStatus)) {
+        if (!isValidStatusTransition(order.getStatus().name(), newStatus.name())) {
             throw new IllegalArgumentException("Transición de estado no válida: " + 
                 order.getStatus() + " -> " + newStatus);
         }
@@ -169,7 +169,7 @@ public class OrderService {
                 break;
             case "DELIVERED":
                 order.setDeliveredAt(Timestamp.now());
-                order.setPaymentStatus("COMPLETED");
+                order.setPaymentStatus(PaymentStatus.COMPLETED.name());
                 break;
             case "CANCELLED":
                 order.updateStatus("CANCELLED");
