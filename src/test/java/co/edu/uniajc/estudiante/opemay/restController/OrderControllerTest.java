@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import co.edu.uniajc.estudiante.opemay.Service.OrderService;
 import co.edu.uniajc.estudiante.opemay.Service.UserService;
 import co.edu.uniajc.estudiante.opemay.dto.CreateOrderRequest;
+import co.edu.uniajc.estudiante.opemay.dto.OrderCreateDTO;
 import co.edu.uniajc.estudiante.opemay.dto.UpdateOrderStatusRequest;
 import co.edu.uniajc.estudiante.opemay.dto.UpdatePaymentStatusRequest;
 import co.edu.uniajc.estudiante.opemay.model.Order;
@@ -89,10 +90,10 @@ class OrderControllerTest {
         createOrderRequest.setPaymentMethod("CREDIT_CARD");
 
         updateStatusRequest = new UpdateOrderStatusRequest();
-        updateStatusRequest.setStatus(OrderStatus.CONFIRMED);
+        updateStatusRequest.setStatus("CONFIRMED");
 
         updatePaymentRequest = new UpdatePaymentStatusRequest();
-        updatePaymentRequest.setPaymentStatus(PaymentStatus.PAID);
+        updatePaymentRequest.setPaymentStatus("PAID");
     }
 
     @Test
@@ -131,7 +132,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.error").exists());
 
         verify(userService).getUserByUsername("testuser");
-        verify(orderService, never()).createOrderFromCart(any(), any(), any());
+        verify(orderService, never()).createOrderFromCart(anyString(), anyString(), any(OrderCreateDTO.class));
     }
 
     @Test
@@ -139,7 +140,7 @@ class OrderControllerTest {
     void testCreateOrder_ExecutionException() throws Exception {
         // Arrange
         when(userService.getUserByUsername("testuser")).thenReturn(testUser);
-        when(orderService.createOrderFromCart(any(), any(), any()))
+        when(orderService.createOrderFromCart(anyString(), anyString(), any(OrderCreateDTO.class)))
                 .thenThrow(new ExecutionException("Database error", new RuntimeException()));
 
         // Act & Assert
@@ -150,7 +151,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.error").exists());
 
         verify(userService).getUserByUsername("testuser");
-        verify(orderService).createOrderFromCart(any(), any(), any());
+        verify(orderService).createOrderFromCart(anyString(), anyString(), any(OrderCreateDTO.class));
     }
 
     @Test
@@ -328,7 +329,7 @@ class OrderControllerTest {
                 .content(objectMapper.writeValueAsString(updateStatusRequest)))
                 .andExpect(status().isForbidden());
 
-        verify(orderService, never()).updateOrderStatus(any(), any());
+        verify(orderService, never()).updateOrderStatus(anyString(), anyString());
     }
 
     @Test
@@ -340,7 +341,7 @@ class OrderControllerTest {
                 .content(objectMapper.writeValueAsString(updatePaymentRequest)))
                 .andExpect(status().isForbidden());
 
-        verify(orderService, never()).updatePaymentStatus(any(), any());
+        verify(orderService, never()).updatePaymentStatus(anyString(), anyString());
     }
 
     @Test

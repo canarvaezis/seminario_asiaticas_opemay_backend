@@ -16,7 +16,7 @@ class OrderTest {
         order = Order.builder()
                 .id("order-123")
                 .userId("user-123")
-                .status("PENDING")
+                .status(OrderStatus.PENDING)
                 .active(true)
                 .paymentMethod("CREDIT_CARD")
                 .paymentStatus("PENDING")

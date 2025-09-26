@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.uniajc.estudiante.opemay.Service.CategoryService;
+import co.edu.uniajc.estudiante.opemay.dto.CategoryCreateDTO;
+import co.edu.uniajc.estudiante.opemay.dto.CategoryUpdateDTO;
 import co.edu.uniajc.estudiante.opemay.dto.CreateCategoryRequest;
 import co.edu.uniajc.estudiante.opemay.dto.UpdateCategoryRequest;
 import co.edu.uniajc.estudiante.opemay.model.Category;
@@ -148,7 +150,7 @@ class CategoryControllerTest {
     @WithMockUser(roles = "ADMIN")
     void testCreateCategory_Success() throws Exception {
         // Arrange
-        when(categoryService.createCategory(any(CreateCategoryRequest.class))).thenReturn(testCategory);
+        when(categoryService.createCategory(any(CategoryCreateDTO.class))).thenReturn(testCategory);
 
         // Act & Assert
         mockMvc.perform(post("/api/categories")
@@ -166,16 +168,16 @@ class CategoryControllerTest {
     @WithMockUser(roles = "ADMIN")
     void testCreateCategory_ExecutionException() throws Exception {
         // Arrange
-        when(categoryService.createCategory(any(CreateCategoryRequest.class)))
+        when(categoryService.createCategory(any(CategoryCreateDTO.class)))
                 .thenThrow(new ExecutionException("Database error", new RuntimeException()));
 
         // Act & Assert
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isInternalServerError());
+                .andExpected(status().isInternalServerError());
 
-        verify(categoryService).createCategory(any(CreateCategoryRequest.class));
+        verify(categoryService).createCategory(any(CategoryCreateDTO.class));
     }
 
     @Test
@@ -212,7 +214,7 @@ class CategoryControllerTest {
     @WithMockUser(roles = "ADMIN")
     void testUpdateCategory_Success() throws Exception {
         // Arrange
-        when(categoryService.updateCategory(eq("cat-123"), any(UpdateCategoryRequest.class)))
+        when(categoryService.updateCategory(eq("cat-123"), any(CategoryUpdateDTO.class)))
                 .thenReturn(testCategory);
 
         // Act & Assert
@@ -223,14 +225,14 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.id").value("cat-123"))
                 .andExpect(jsonPath("$.name").value("Test Category"));
 
-        verify(categoryService).updateCategory(eq("cat-123"), any(UpdateCategoryRequest.class));
+        verify(categoryService).updateCategory(eq("cat-123"), any(CategoryUpdateDTO.class));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void testUpdateCategory_NotFound() throws Exception {
         // Arrange
-        when(categoryService.updateCategory(eq("nonexistent"), any(UpdateCategoryRequest.class)))
+        when(categoryService.updateCategory(eq("nonexistent"), any(CategoryUpdateDTO.class)))
                 .thenReturn(null);
 
         // Act & Assert
@@ -239,14 +241,13 @@ class CategoryControllerTest {
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound());
 
-        verify(categoryService).updateCategory(eq("nonexistent"), any(UpdateCategoryRequest.class));
+        verify(categoryService).updateCategory(eq("nonexistent"), any(CategoryUpdateDTO.class));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void testDeleteCategory_Success() throws Exception {
-        // Arrange
-        when(categoryService.deleteCategory("cat-123")).thenReturn(true);
+        // Arrange - deleteCategory es void, no necesita mock de retorno
 
         // Act & Assert
         mockMvc.perform(delete("/api/categories/cat-123")
@@ -259,8 +260,7 @@ class CategoryControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testDeleteCategory_NotFound() throws Exception {
-        // Arrange
-        when(categoryService.deleteCategory("nonexistent")).thenReturn(false);
+        // Arrange - deleteCategory es void, no necesita mock de retorno
 
         // Act & Assert
         mockMvc.perform(delete("/api/categories/nonexistent")
