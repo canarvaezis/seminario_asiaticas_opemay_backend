@@ -7,9 +7,16 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.firebase.cloud.FirestoreClient;
 
 import co.edu.uniajc.estudiante.opemay.IRespository.CategoryRepository;
+import co.edu.uniajc.estudiante.opemay.dto.CategoryCreateDTO;
+import co.edu.uniajc.estudiante.opemay.dto.CategoryUpdateDTO;
 import co.edu.uniajc.estudiante.opemay.model.Category;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +26,12 @@ public class CategoryService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+    
+    private Firestore firestore;
+    
+    public CategoryService() {
+        this.firestore = FirestoreClient.getFirestore();
+    }
 
     /**
      * Crea una nueva categoría
@@ -171,5 +184,32 @@ public class CategoryService {
         if (!category.isValid()) {
             throw new IllegalArgumentException("Los datos de la categoría no son válidos");
         }
+    }
+
+    // Métodos compatibles para los tests
+    public String createCategory(CategoryCreateDTO dto) {
+        return createCategory(dto.getName(), dto.getDescription(), dto.getSlug());
+    }
+
+    public String updateCategory(String categoryId, CategoryUpdateDTO dto) {
+        return updateCategory(categoryId, dto.getName(), dto.getDescription(), dto.getSlug());
+    }
+
+    public Category getCategoryBySlug(String slug) throws ExecutionException, InterruptedException {
+        ApiFuture<QuerySnapshot> future = firestore.collection("categories")
+            .whereEqualTo("slug", slug)
+            .get();
+        
+        QuerySnapshot querySnapshot = future.get();
+        List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+        
+        if (documents.isEmpty()) {
+            return null;
+        }
+        
+        QueryDocumentSnapshot document = documents.get(0);
+        Category category = document.toObject(Category.class);
+        category.setId(document.getId());
+        return category;
     }
 }

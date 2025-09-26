@@ -35,7 +35,7 @@ public class Order {
     private String discountCode;
     
     @Builder.Default
-    private String status = "PENDING"; // PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+    private OrderStatus status = OrderStatus.PENDING;
     
     // Información de entrega
     private String deliveryAddress;
@@ -45,7 +45,8 @@ public class Order {
     
     // Información de pago
     private String paymentMethod; // CASH, CARD, TRANSFER
-    private String paymentStatus; // PENDING, PAID, FAILED, REFUNDED
+    @Builder.Default
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
     private String paymentReference;
     
     @Builder.Default

@@ -10,10 +10,13 @@ import org.springframework.stereotype.Service;
 import co.edu.uniajc.estudiante.opemay.IRespository.CartRepository;
 import co.edu.uniajc.estudiante.opemay.IRespository.OrderRepository;
 import co.edu.uniajc.estudiante.opemay.IRespository.ProductRepository;
+import co.edu.uniajc.estudiante.opemay.dto.CreateOrderRequest;
 import co.edu.uniajc.estudiante.opemay.model.Cart;
 import co.edu.uniajc.estudiante.opemay.model.CartItem;
 import co.edu.uniajc.estudiante.opemay.model.Order;
 import co.edu.uniajc.estudiante.opemay.model.OrderItem;
+import co.edu.uniajc.estudiante.opemay.model.OrderStatus;
+import co.edu.uniajc.estudiante.opemay.model.PaymentStatus;
 import co.edu.uniajc.estudiante.opemay.model.Product;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -245,23 +248,23 @@ public class OrderService {
         
         for (Order order : allOrders) {
             switch (order.getStatus()) {
-                case "PENDING":
+                case PENDING:
                     stats.setPendingOrders(stats.getPendingOrders() + 1);
                     break;
-                case "CONFIRMED":
+                case CONFIRMED:
                     stats.setConfirmedOrders(stats.getConfirmedOrders() + 1);
                     break;
-                case "PROCESSING":
+                case PROCESSING:
                     stats.setProcessingOrders(stats.getProcessingOrders() + 1);
                     break;
-                case "SHIPPED":
+                case SHIPPED:
                     stats.setShippedOrders(stats.getShippedOrders() + 1);
                     break;
-                case "DELIVERED":
+                case DELIVERED:
                     stats.setDeliveredOrders(stats.getDeliveredOrders() + 1);
                     stats.setTotalRevenue(stats.getTotalRevenue() + order.getTotalAmount());
                     break;
-                case "CANCELLED":
+                case CANCELLED:
                     stats.setCancelledOrders(stats.getCancelledOrders() + 1);
                     break;
             }
@@ -387,5 +390,42 @@ public class OrderService {
         public void setTotalRevenue(double totalRevenue) {
             this.totalRevenue = totalRevenue;
         }
+    }
+
+    // Métodos compatibles con tests
+    public Order createOrderFromCart(String cartId, String userId, CreateOrderRequest request) 
+            throws ExecutionException, InterruptedException {
+        return createOrder(cartId, userId, request.getShippingAddress(), request.getPaymentMethod());
+    }
+
+    public Order updateOrderStatus(String orderId, OrderStatus newStatus) 
+            throws ExecutionException, InterruptedException {
+        return updateOrderStatus(orderId, newStatus.name());
+    }
+
+    public Order updatePaymentStatus(String orderId, PaymentStatus newPaymentStatus) 
+            throws ExecutionException, InterruptedException {
+        
+        log.info("Actualizando estado de pago de orden {} a {}", orderId, newPaymentStatus);
+        
+        Order order = orderRepository.getOrderById(orderId);
+        if (order == null) {
+            throw new IllegalArgumentException("Orden no encontrada");
+        }
+
+        order.setPaymentStatus(newPaymentStatus);
+        order.setUpdatedAt(Timestamp.now());
+        
+        orderRepository.update(order);
+        
+        log.info("Estado de pago actualizado exitosamente");
+        return order;
+    }
+
+    public List<Order> getOrdersByStatus(OrderStatus status) throws ExecutionException, InterruptedException {
+        List<Order> allOrders = orderRepository.getAllOrders();
+        return allOrders.stream()
+                .filter(order -> status.equals(order.getStatus()))
+                .toList();
     }
 }
