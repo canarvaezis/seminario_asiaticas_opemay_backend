@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
@@ -52,6 +54,18 @@ public class TestFirebaseConfig {
         when(mockCollection.document(anyString())).thenReturn(mockDocument);
         
         return mockFirestore;
+    }
+    
+    /**
+     * ObjectMapper configurado para tests que puede manejar Timestamp
+     * Configura Jackson para omitir valores nulos en la serialización
+     */
+    @Bean
+    @Primary
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        return mapper;
     }
 
 

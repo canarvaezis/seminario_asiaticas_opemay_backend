@@ -88,16 +88,18 @@ class HomeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testHomeResponseType() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                .andExpect(jsonPath("$.message").value("¡Bienvenido a Opemay API!"));
     }
 
     @Test
+    @WithMockUser  
     void testStatusResponseType() throws Exception {
         mockMvc.perform(get("/status"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                .andExpect(jsonPath("$.status").value("UP"));
     }
 }
