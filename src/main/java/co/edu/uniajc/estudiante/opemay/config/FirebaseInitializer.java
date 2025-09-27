@@ -10,6 +10,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
@@ -23,16 +24,22 @@ class FirebaseInitializer {
 
     private boolean firebaseInitialized = false;
 
- @PostConstruct
+    @PostConstruct
     public void initFirestore() throws IOException {
-        String firebaseConfig = System.getenv("FIREBASE_CONFIG_03");
+        InputStream serviceAccount = null;
 
-        InputStream serviceAccount;
+        // 1. Intentar con variable de entorno
+        String firebaseConfig = System.getenv("FIREBASE_CONFIG_03");
         if (firebaseConfig != null && !firebaseConfig.isBlank()) {
             serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
         } else {
-            this.firebaseInitialized = false;
-            return;
+            // 2. Si no hay variable, buscar en resources
+            try {
+                serviceAccount = new ClassPathResource("firebase-key.json").getInputStream();
+            } catch (IOException e) {
+                this.firebaseInitialized = false;
+                throw new IllegalStateException("No se encontró configuración de Firebase (ni variable FIREBASE_CONFIG_03 ni resources/firebase-key.json)", e);
+            }
         }
 
         if (FirebaseApp.getApps().isEmpty()) {
@@ -42,8 +49,9 @@ class FirebaseInitializer {
                         .build();
                 FirebaseApp.initializeApp(options);
                 this.firebaseInitialized = true;
-            } catch (Exception ignored) { // excepción ignorada
+            } catch (IOException e) {
                 this.firebaseInitialized = false;
+                throw new IllegalStateException("Error al inicializar Firebase", e);
             }
         } else {
             this.firebaseInitialized = true;
@@ -53,13 +61,8 @@ class FirebaseInitializer {
     @Bean
     public Firestore firestore() {
         if (!firebaseInitialized) {
-            return null; // O puedes lanzar una excepción personalizada
+            throw new IllegalStateException("Firebase no inicializado. Verifica tu configuración.");
         }
-
-        try {
-            return FirestoreClient.getFirestore();
-        } catch (Exception e) {
-            return null;
-        }
+        return FirestoreClient.getFirestore();
     }
 }
