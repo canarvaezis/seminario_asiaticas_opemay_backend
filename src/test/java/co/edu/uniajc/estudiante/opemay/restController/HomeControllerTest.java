@@ -1,9 +1,6 @@
 package co.edu.uniajc.estudiante.opemay.restController;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -11,21 +8,26 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import co.edu.uniajc.estudiante.opemay.config.TestConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestFirebaseConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestSecurityConfig;
 
 @WebMvcTest(HomeController.class)
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "firebase.enabled=false"
-})
-@Import(TestConfig.class)
+@Import({TestFirebaseConfig.class, TestSecurityConfig.class})
+@SuppressWarnings("deprecation") // Suppress MockBean deprecation warnings
 class HomeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @org.springframework.boot.test.mock.mockito.MockBean  
+    private co.edu.uniajc.estudiante.opemay.Service.JwtService jwtService;
 
     @Test
     @WithMockUser

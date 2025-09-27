@@ -13,6 +13,8 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
 
+
+
 /**
  * Configuración de Firebase para entorno de testing
  * Proporciona mocks de Firebase para evitar inicialización real
@@ -51,4 +53,6 @@ public class TestFirebaseConfig {
         
         return mockFirestore;
     }
+
+
 }

@@ -39,6 +39,9 @@ class ProductControllerTest {
     @MockBean
     private ProductService productService;
 
+    @MockBean  
+    private co.edu.uniajc.estudiante.opemay.Service.JwtService jwtService;
+
     @Autowired
     private ObjectMapper objectMapper;
 

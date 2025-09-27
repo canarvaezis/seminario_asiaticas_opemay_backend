@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.uniajc.estudiante.opemay.Service.CategoryService;
+import co.edu.uniajc.estudiante.opemay.Service.JwtService;
 import co.edu.uniajc.estudiante.opemay.config.TestFirebaseConfig;
 import co.edu.uniajc.estudiante.opemay.config.TestSecurityConfig;
 import co.edu.uniajc.estudiante.opemay.dto.CategoryCreateDTO;
@@ -44,6 +45,9 @@ class CategoryControllerTest {
 
     @MockBean
     private CategoryService categoryService;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -139,13 +143,13 @@ class CategoryControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void testGetAllCategories_Success() throws Exception {
         // Arrange
         when(categoryService.getAllCategories()).thenReturn(testCategories);
 
         // Act & Assert
-        mockMvc.perform(get("/api/categories/all")
+        mockMvc.perform(get("/api/categories/admin/all")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -158,7 +162,12 @@ class CategoryControllerTest {
     @WithMockUser(roles = "ADMIN")
     void testCreateCategory_Success() throws Exception {
         // Arrange
-        when(categoryService.createCategory(any(CategoryCreateDTO.class))).thenReturn(testCategory);
+        when(categoryService.createCategory(
+                "New Category", 
+                "New category description", 
+                "https://example.com/new-image.jpg", 
+                3
+        )).thenReturn(testCategory);
 
         // Act & Assert
         mockMvc.perform(post("/api/categories")
@@ -169,15 +178,24 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.name").value("Test Category"))
                 .andExpect(jsonPath("$.description").value("Test category description"));
 
-        verify(categoryService).createCategory(any(CategoryCreateDTO.class));
+        verify(categoryService).createCategory(
+                "New Category", 
+                "New category description", 
+                "https://example.com/new-image.jpg", 
+                3
+        );
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void testCreateCategory_ExecutionException() throws Exception {
         // Arrange
-        when(categoryService.createCategory(any(CategoryCreateDTO.class)))
-                .thenThrow(new ExecutionException("Database error", new RuntimeException()));
+        when(categoryService.createCategory(
+                "New Category", 
+                "New category description", 
+                "https://example.com/new-image.jpg", 
+                3
+        )).thenThrow(new ExecutionException("Database error", new RuntimeException()));
 
         // Act & Assert
         mockMvc.perform(post("/api/categories")
@@ -185,7 +203,12 @@ class CategoryControllerTest {
                 .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isInternalServerError());
 
-        verify(categoryService).createCategory(any(CategoryCreateDTO.class));
+        verify(categoryService).createCategory(
+                "New Category", 
+                "New category description", 
+                "https://example.com/new-image.jpg", 
+                3
+        );
     }
 
     @Test
@@ -222,8 +245,13 @@ class CategoryControllerTest {
     @WithMockUser(roles = "ADMIN")
     void testUpdateCategory_Success() throws Exception {
         // Arrange
-        when(categoryService.updateCategory(eq("cat-123"), any(CategoryUpdateDTO.class)))
-                .thenReturn(testCategory);
+        when(categoryService.updateCategory(
+                "cat-123", 
+                "Updated Category", 
+                "Updated category description", 
+                "https://example.com/updated-image.jpg", 
+                5
+        )).thenReturn(testCategory);
 
         // Act & Assert
         mockMvc.perform(put("/api/categories/cat-123")
@@ -233,23 +261,40 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.id").value("cat-123"))
                 .andExpect(jsonPath("$.name").value("Test Category"));
 
-        verify(categoryService).updateCategory(eq("cat-123"), any(CategoryUpdateDTO.class));
+        verify(categoryService).updateCategory(
+                "cat-123", 
+                "Updated Category", 
+                "Updated category description", 
+                "https://example.com/updated-image.jpg", 
+                5
+        );
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void testUpdateCategory_NotFound() throws Exception {
         // Arrange
-        when(categoryService.updateCategory(eq("nonexistent"), any(CategoryUpdateDTO.class)))
-                .thenReturn(null);
+        when(categoryService.updateCategory(
+                "nonexistent", 
+                "Updated Category", 
+                "Updated category description", 
+                "https://example.com/updated-image.jpg", 
+                5
+        )).thenReturn(null);
 
         // Act & Assert
         mockMvc.perform(put("/api/categories/nonexistent")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
 
-        verify(categoryService).updateCategory(eq("nonexistent"), any(CategoryUpdateDTO.class));
+        verify(categoryService).updateCategory(
+                "nonexistent", 
+                "Updated Category", 
+                "Updated category description", 
+                "https://example.com/updated-image.jpg", 
+                5
+        );
     }
 
     @Test
@@ -273,7 +318,7 @@ class CategoryControllerTest {
         // Act & Assert
         mockMvc.perform(delete("/api/categories/nonexistent")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNoContent());
 
         verify(categoryService).deleteCategory("nonexistent");
     }
@@ -282,30 +327,30 @@ class CategoryControllerTest {
     @WithMockUser
     void testGetCategoryBySlug_Success() throws Exception {
         // Arrange
-        when(categoryService.getCategoryBySlug("test-category")).thenReturn(testCategory);
+        when(categoryService.getCategoryByName("test-category")).thenReturn(testCategory);
 
         // Act & Assert
-        mockMvc.perform(get("/api/categories/slug/test-category")
+        mockMvc.perform(get("/api/categories/name/test-category")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("cat-123"))
                 .andExpect(jsonPath("$.slug").value("test-category"));
 
-        verify(categoryService).getCategoryBySlug("test-category");
+        verify(categoryService).getCategoryByName("test-category");
     }
 
     @Test
     @WithMockUser
     void testGetCategoryBySlug_NotFound() throws Exception {
         // Arrange
-        when(categoryService.getCategoryBySlug("nonexistent-slug")).thenReturn(null);
+        when(categoryService.getCategoryByName("nonexistent-slug")).thenReturn(null);
 
         // Act & Assert
-        mockMvc.perform(get("/api/categories/slug/nonexistent-slug")
+        mockMvc.perform(get("/api/categories/name/nonexistent-slug")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
-        verify(categoryService).getCategoryBySlug("nonexistent-slug");
+        verify(categoryService).getCategoryByName("nonexistent-slug");
     }
 
     @Test

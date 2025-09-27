@@ -24,6 +24,7 @@ import co.edu.uniajc.estudiante.opemay.model.Cart;
 import co.edu.uniajc.estudiante.opemay.model.CartItem;
 import co.edu.uniajc.estudiante.opemay.model.Order;
 import co.edu.uniajc.estudiante.opemay.model.Product;
+import co.edu.uniajc.estudiante.opemay.model.OrderStatus;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -76,7 +77,7 @@ class OrderServiceTest {
         testOrder = new Order();
         testOrder.setId("order-123");
         testOrder.setUserId("user-123");
-        testOrder.setStatus("PENDING");
+        testOrder.setStatus(OrderStatus.PENDING);
         testOrder.setCreatedAt(Timestamp.now());
         testOrder.setActive(true);
     }
@@ -94,7 +95,7 @@ class OrderServiceTest {
         // Then
         assertNotNull(result);
         assertEquals("user-123", result.getUserId());
-        assertEquals("PENDING", result.getStatus());
+        assertEquals(OrderStatus.PENDING, result.getStatus());
         assertEquals("123 Test Street", result.getDeliveryAddress());
         assertEquals("CREDIT_CARD", result.getPaymentMethod());
         assertEquals(1, result.getItems().size());
@@ -170,7 +171,7 @@ class OrderServiceTest {
         Order result = orderService.updateOrderStatus("order-123", "CONFIRMED");
 
         // Then
-        assertEquals("CONFIRMED", result.getStatus());
+        assertEquals(OrderStatus.CONFIRMED, result.getStatus());
         assertNotNull(result.getConfirmedAt());
         verify(orderRepository).update(testOrder);
     }
@@ -178,7 +179,7 @@ class OrderServiceTest {
     @Test
     void testUpdateOrderStatus_InvalidTransition() throws ExecutionException, InterruptedException {
         // Given
-        testOrder.setStatus("DELIVERED");
+        testOrder.setStatus(OrderStatus.DELIVERED);
         when(orderRepository.getOrderById("order-123")).thenReturn(testOrder);
 
         // When & Then
@@ -199,8 +200,7 @@ class OrderServiceTest {
         Order result = orderService.cancelOrder("order-123", "Usuario cambió de opinión");
 
         // Then
-        assertEquals("CANCELLED", result.getStatus());
-        assertEquals("CANCELLED", result.getStatus());
+        assertEquals(OrderStatus.CANCELLED, result.getStatus());
         // Verificar que la orden fue actualizada
         assertNotNull(result.getUpdatedAt());
         verify(orderRepository).update(testOrder);

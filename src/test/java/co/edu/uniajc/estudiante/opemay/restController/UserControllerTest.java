@@ -42,6 +42,9 @@ class UserControllerTest {
     @MockBean
     private UserService userService;
 
+    @MockBean  
+    private co.edu.uniajc.estudiante.opemay.Service.JwtService jwtService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
