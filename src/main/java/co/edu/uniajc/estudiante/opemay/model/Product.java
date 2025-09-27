@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.cloud.Timestamp;
 
-import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampDeserializer;
-import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampSerializer;
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,12 +26,12 @@ public class Product {
     private String description;
     
     @Builder.Default
-    @JsonSerialize(using = TimestampSerializer.class)
-    @JsonDeserialize(using = TimestampDeserializer.class)
+    @JsonSerialize(using = JacksonConfig.TimestampSerializer.class)
+    @JsonDeserialize(using = JacksonConfig.TimestampDeserializer.class)
     private Timestamp createdAt = Timestamp.now();
     
-    @JsonSerialize(using = TimestampSerializer.class)
-    @JsonDeserialize(using = TimestampDeserializer.class)
+    @JsonSerialize(using = JacksonConfig.TimestampSerializer.class)
+    @JsonDeserialize(using = JacksonConfig.TimestampDeserializer.class)
     private Timestamp updatedAt;
     
     @Builder.Default

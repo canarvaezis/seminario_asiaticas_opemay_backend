@@ -5,48 +5,18 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.cloud.Timestamp;
 
-@Configuration
-public class JacksonConfig {
-
-    @Bean
-    @Primary
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = Jackson2ObjectMapperBuilder.json().build();
-        
-        SimpleModule timestampModule = new SimpleModule();
-        timestampModule.addSerializer(Timestamp.class, new TimestampSerializer());
-        timestampModule.addDeserializer(Timestamp.class, new TimestampDeserializer());
-        
-        mapper.registerModule(timestampModule);
-        return mapper;
-    }
+public final class JacksonConfig {
     
-    @Bean
-    @Primary
-    public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
-        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-        
-        SimpleModule timestampModule = new SimpleModule();
-        timestampModule.addSerializer(Timestamp.class, new TimestampSerializer());
-        timestampModule.addDeserializer(Timestamp.class, new TimestampDeserializer());
-        
-        builder.modules(timestampModule);
-        return builder;
+    private JacksonConfig() {
+        // Constructor privado para clase utilitaria
     }
     
     public static class TimestampSerializer extends StdSerializer<Timestamp> {
