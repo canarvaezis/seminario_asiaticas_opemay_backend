@@ -11,21 +11,26 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.Import;
 
 import co.edu.uniajc.estudiante.opemay.IRespository.CategoryRepository;
+import co.edu.uniajc.estudiante.opemay.config.TestFirebaseConfig;
 import co.edu.uniajc.estudiante.opemay.model.Category;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@ActiveProfiles("test")
+@Import(TestFirebaseConfig.class)
+@SuppressWarnings("deprecation") // Suppress MockBean deprecation warnings
 class CategoryServiceTest {
 
-    @Mock
+    @MockBean
     private CategoryRepository categoryRepository;
 
-    @InjectMocks
+    @Autowired
     private CategoryService categoryService;
 
     private Category testCategory;

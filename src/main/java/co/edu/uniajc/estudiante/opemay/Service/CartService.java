@@ -145,9 +145,7 @@ public class CartService {
         return cart;
     }
 
-    /**
-     * Limpia todo el carrito
-     */
+  
     public Cart clearCart(String userId) throws ExecutionException, InterruptedException {
         Cart cart = getOrCreateActiveCart(userId);
         cart.clearCart();

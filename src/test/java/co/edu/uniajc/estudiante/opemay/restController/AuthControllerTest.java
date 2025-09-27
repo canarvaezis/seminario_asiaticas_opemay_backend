@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -19,24 +18,22 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.uniajc.estudiante.opemay.Service.JwtService;
 import co.edu.uniajc.estudiante.opemay.Service.UserService;
-import co.edu.uniajc.estudiante.opemay.config.TestConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestFirebaseConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestSecurityConfig;
 import co.edu.uniajc.estudiante.opemay.dto.LoginRequest;
 import co.edu.uniajc.estudiante.opemay.dto.RegisterRequest;
 import co.edu.uniajc.estudiante.opemay.model.User;
 
 @WebMvcTest(AuthController.class)
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "firebase.enabled=false"
-})
-@Import(TestConfig.class)
+@Import({TestFirebaseConfig.class, TestSecurityConfig.class})
+@SuppressWarnings("deprecation") // Suppress MockBean deprecation warnings until migration
 class AuthControllerTest {
 
     @Autowired

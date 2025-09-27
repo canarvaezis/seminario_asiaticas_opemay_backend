@@ -27,7 +27,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.uniajc.estudiante.opemay.Service.OrderService;
 import co.edu.uniajc.estudiante.opemay.Service.UserService;
-import co.edu.uniajc.estudiante.opemay.config.TestConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestFirebaseConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestSecurityConfig;
 import co.edu.uniajc.estudiante.opemay.dto.CreateOrderRequest;
 import co.edu.uniajc.estudiante.opemay.dto.OrderCreateDTO;
 import co.edu.uniajc.estudiante.opemay.dto.UpdateOrderStatusRequest;
@@ -39,10 +40,8 @@ import co.edu.uniajc.estudiante.opemay.model.User;
 
 @WebMvcTest(OrderController.class)
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "firebase.enabled=false"
-})
-@Import(TestConfig.class)
+@Import({TestFirebaseConfig.class, TestSecurityConfig.class})
+@SuppressWarnings("deprecation") // Suppress MockBean deprecation warnings
 class OrderControllerTest {
 
     @Autowired

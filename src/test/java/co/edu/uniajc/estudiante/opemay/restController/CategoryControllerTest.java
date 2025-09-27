@@ -25,7 +25,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.uniajc.estudiante.opemay.Service.CategoryService;
-import co.edu.uniajc.estudiante.opemay.config.TestConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestFirebaseConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestSecurityConfig;
 import co.edu.uniajc.estudiante.opemay.dto.CategoryCreateDTO;
 import co.edu.uniajc.estudiante.opemay.dto.CategoryUpdateDTO;
 import co.edu.uniajc.estudiante.opemay.dto.CreateCategoryRequest;
@@ -34,10 +35,8 @@ import co.edu.uniajc.estudiante.opemay.model.Category;
 
 @WebMvcTest(CategoryController.class)
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "firebase.enabled=false"
-})
-@Import(TestConfig.class)
+@Import({TestFirebaseConfig.class, TestSecurityConfig.class})
+@SuppressWarnings("deprecation") // Suppress MockBean deprecation warnings
 class CategoryControllerTest {
 
     @Autowired

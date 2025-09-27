@@ -10,9 +10,8 @@ import org.springframework.stereotype.Service;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.firebase.cloud.FirestoreClient;
+import com.google.cloud.firestore.QuerySnapshot;
 
 import co.edu.uniajc.estudiante.opemay.IRespository.CategoryRepository;
 import co.edu.uniajc.estudiante.opemay.dto.CategoryCreateDTO;
@@ -27,11 +26,8 @@ public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
     
+    @Autowired
     private Firestore firestore;
-    
-    public CategoryService() {
-        this.firestore = FirestoreClient.getFirestore();
-    }
 
     /**
      * Crea una nueva categoría

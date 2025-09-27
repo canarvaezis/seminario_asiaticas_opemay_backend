@@ -18,21 +18,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.uniajc.estudiante.opemay.Service.ProductService;
-import co.edu.uniajc.estudiante.opemay.config.TestConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestFirebaseConfig;
+import co.edu.uniajc.estudiante.opemay.config.TestSecurityConfig;
 import co.edu.uniajc.estudiante.opemay.model.Product;
 
 @WebMvcTest(ProductController.class)
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "firebase.enabled=false"
-})
-@Import(TestConfig.class)
+@Import({TestFirebaseConfig.class, TestSecurityConfig.class})
+@SuppressWarnings("deprecation") // Suppress MockBean deprecation warnings
 class ProductControllerTest {
 
     @Autowired

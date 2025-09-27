@@ -186,8 +186,12 @@ public class UserService {
             userRepository.save(user);
             return user;
             
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (ExecutionException e) {
             log.error("Error guardando usuario: {}", e.getMessage());
+            throw new RuntimeException("Error al guardar usuario", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Error guardando usuario (interrumpido): {}", e.getMessage());
             throw new RuntimeException("Error al guardar usuario", e);
         }
     }
