@@ -2,11 +2,11 @@ package co.edu.uniajc.estudiante.opemay.model;
 
 import java.util.List;
 
-import com.google.cloud.Timestamp;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import co.edu.uniajc.estudiante.opemay.config.JacksonConfig;
+import com.google.cloud.Timestamp;
 
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,17 +1,17 @@
 package co.edu.uniajc.estudiante.opemay.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.cloud.Timestamp;
+
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampDeserializer;
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import lombok.EqualsAndHashCode;
-
-import com.google.cloud.Timestamp;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampSerializer;
-import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampDeserializer;
 
 @Data
 @Builder
