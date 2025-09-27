@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.cloud.Timestamp;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,8 +39,12 @@ public class Cart {
     private String status = "ACTIVE"; // ACTIVE, COMPLETED, ABANDONED
     
     @Builder.Default
+    @JsonSerialize(using = JacksonConfig.TimestampSerializer.class)
+    @JsonDeserialize(using = JacksonConfig.TimestampDeserializer.class)
     private Timestamp createdAt = Timestamp.now();
     
+    @JsonSerialize(using = JacksonConfig.TimestampSerializer.class)
+    @JsonDeserialize(using = JacksonConfig.TimestampDeserializer.class)
     private Timestamp updatedAt;
     
     @Builder.Default

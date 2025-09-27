@@ -26,7 +26,7 @@ public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
     
-    @Autowired
+    @Autowired(required = false)
     private Firestore firestore;
 
     /**

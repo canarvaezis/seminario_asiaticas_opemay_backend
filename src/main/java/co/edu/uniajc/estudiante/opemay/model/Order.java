@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.cloud.Timestamp;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampSerializer;
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampDeserializer;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,12 +54,28 @@ public class Order {
     private String paymentReference;
     
     @Builder.Default
+    @JsonSerialize(using = TimestampSerializer.class)
+    @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp createdAt = Timestamp.now();
     
+    @JsonSerialize(using = TimestampSerializer.class)
+    @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp updatedAt;
+    
+    @JsonSerialize(using = TimestampSerializer.class)
+    @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp deliveryDate;
+    
+    @JsonSerialize(using = TimestampSerializer.class)
+    @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp confirmedAt;
+    
+    @JsonSerialize(using = TimestampSerializer.class)
+    @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp shippedAt;
+    
+    @JsonSerialize(using = TimestampSerializer.class)
+    @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp deliveredAt;
     
     @Builder.Default

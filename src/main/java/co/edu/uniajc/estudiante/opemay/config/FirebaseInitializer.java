@@ -17,8 +17,11 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
 @ConditionalOnProperty(name = "firebase.enabled", havingValue = "true")
+@Slf4j
 class FirebaseInitializer {
 
     private boolean firebaseInitialized = false;
@@ -29,10 +32,18 @@ class FirebaseInitializer {
 
         InputStream serviceAccount;
         if (firebaseConfig != null && !firebaseConfig.isBlank()) {
+            // Producción/GitHub Actions: usar variable de entorno
             serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
+            log.info("Variable de entorno FIREBASE_CONFIG_03 encontrada, inicializando Firebase...");
         } else {
-            this.firebaseInitialized = false;
-            return;
+            // Desarrollo local: usar archivo firebase-key.json
+            serviceAccount = getClass().getClassLoader().getResourceAsStream("firebase-key.json");
+            if (serviceAccount == null) {
+                log.warn("No se encontró firebase-key.json en resources. Firebase no será inicializado.");
+                this.firebaseInitialized = false;
+                return;
+            }
+            log.info("Usando firebase-key.json para desarrollo local, inicializando Firebase...");
         }
 
         if (FirebaseApp.getApps().isEmpty()) {
@@ -42,23 +53,30 @@ class FirebaseInitializer {
                         .build();
                 FirebaseApp.initializeApp(options);
                 this.firebaseInitialized = true;
-            } catch (Exception ignored) { // excepción ignorada
+                log.info("Firebase inicializado exitosamente.");
+            } catch (Exception e) {
+                log.error("Error inicializando Firebase: {}", e.getMessage());
                 this.firebaseInitialized = false;
             }
         } else {
             this.firebaseInitialized = true;
+            log.info("Firebase ya estaba inicializado.");
         }
     }
 
     @Bean
     public Firestore firestore() {
         if (!firebaseInitialized) {
-            return null; // O puedes lanzar una excepción personalizada
+            // Para desarrollo local cuando Firebase no está configurado
+            // En producción/CI, las variables de entorno estarán disponibles
+            log.warn("Firebase no inicializado. Retornando null para desarrollo local.");
+            return null;
         }
 
         try {
             return FirestoreClient.getFirestore();
         } catch (Exception e) {
+            log.error("Error obteniendo Firestore client: {}", e.getMessage());
             return null;
         }
     }

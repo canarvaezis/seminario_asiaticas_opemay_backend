@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.api.core.ApiFuture;
@@ -53,9 +54,9 @@ public class ProductService {
     /**
      * Constructor que inyecta la dependencia de Firestore
      * 
-     * @param firestore instancia de Firestore configurada
+     * @param firestore instancia de Firestore configurada (puede ser null en desarrollo local)
      */
-    public ProductService(Firestore firestore) {
+    public ProductService(@Autowired(required = false) Firestore firestore) {
         this.firestore = firestore;
     }
 

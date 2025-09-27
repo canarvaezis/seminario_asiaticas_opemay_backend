@@ -8,6 +8,10 @@ import lombok.ToString;
 import lombok.EqualsAndHashCode;
 
 import com.google.cloud.Timestamp;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampSerializer;
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig.TimestampDeserializer;
 
 @Data
 @Builder
@@ -23,8 +27,12 @@ public class Product {
     private String description;
     
     @Builder.Default
+    @JsonSerialize(using = TimestampSerializer.class)
+    @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp createdAt = Timestamp.now();
     
+    @JsonSerialize(using = TimestampSerializer.class)
+    @JsonDeserialize(using = TimestampDeserializer.class)
     private Timestamp updatedAt;
     
     @Builder.Default

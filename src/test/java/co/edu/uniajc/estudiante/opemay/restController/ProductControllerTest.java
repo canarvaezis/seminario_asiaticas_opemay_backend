@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -78,13 +79,24 @@ class ProductControllerTest {
     @Test
     @WithMockUser
     void testSaveProduct_Success() throws Exception {
-        // Arrange
+        // Arrange - Crear producto sin campos de timestamp para el request
+        Product productRequest = Product.builder()
+                .name("Test Product")
+                .price(10.0)
+                .description("Test Description")
+                .categoryId("cat-456")
+                .categoryName("Test Category")
+                .stock(50)
+                .active(true)
+                .build();
+        
         when(productService.createProduct(any(Product.class))).thenReturn(testProduct);
 
         // Act & Assert
         mockMvc.perform(post("/api/products/save")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testProduct)))
+                .content(objectMapper.writeValueAsString(productRequest)))
+                .andDo(print()) // Para ver la respuesta en los logs
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("product-123"))
                 .andExpect(jsonPath("$.name").value("Test Product"))
