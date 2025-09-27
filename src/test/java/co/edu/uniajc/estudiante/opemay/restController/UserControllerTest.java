@@ -55,7 +55,7 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         testUser = User.builder()
-                .id("user-123")
+                .id("testuser")
                 .username("testuser")
                 .email("test@example.com")
                 .password("encodedPassword")
@@ -171,7 +171,7 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value("user-123"))
+                .andExpect(jsonPath("$[0].id").value("testuser"))
                 .andExpect(jsonPath("$[0].username").value("testuser"))
                 .andExpect(jsonPath("$[1].id").value("user-456"))
                 .andExpect(jsonPath("$[1].username").value("anotheruser"));
@@ -181,26 +181,26 @@ class UserControllerTest {
 
     @Test
     @WithMockUser
-    void testGetUserById_Success() throws Exception {
+    void testgetUserByUsername_Success() throws Exception {
         // Arrange
-        when(userService.getUserById("user-123")).thenReturn(testUser);
+        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
 
         // Act & Assert
-        mockMvc.perform(get("/api/users/user-123")
+        mockMvc.perform(get("/api/users/testuser")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("user-123"))
+                .andExpect(jsonPath("$.id").value("testuser"))
                 .andExpect(jsonPath("$.username").value("testuser"))
                 .andExpect(jsonPath("$.email").value("test@example.com"));
 
-        verify(userService).getUserById("user-123");
+        verify(userService).getUserByUsername("testuser");
     }
 
     @Test
     @WithMockUser
-    void testGetUserById_NotFound() throws Exception {
+    void testgetUserByUsername_NotFound() throws Exception {
         // Arrange
-        when(userService.getUserById("nonexistent")).thenReturn(null);
+        when(userService.getUserByUsername("nonexistent")).thenReturn(null);
 
         // Act & Assert
         mockMvc.perform(get("/api/users/nonexistent")
@@ -208,14 +208,14 @@ class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
 
-        verify(userService).getUserById("nonexistent");
+        verify(userService).getUserByUsername("nonexistent");
     }
 
     @Test
     @WithMockUser
     void testUpdateUser_Success() throws Exception {
         // Arrange
-        when(userService.getUserById("user-123")).thenReturn(testUser);
+        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
         when(userService.updateUser(any(User.class))).thenReturn(testUser);
 
         Map<String, String> updateData = new HashMap<>();
@@ -223,14 +223,14 @@ class UserControllerTest {
         updateData.put("lastName", "Name");
 
         // Act & Assert
-        mockMvc.perform(put("/api/users/user-123")
+        mockMvc.perform(put("/api/users/testuser")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateData)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.user").exists());
 
-        verify(userService).getUserById("user-123");
+        verify(userService).getUserByUsername("testuser");
         verify(userService).updateUser(any(User.class));
     }
 
@@ -238,7 +238,7 @@ class UserControllerTest {
     @WithMockUser
     void testUpdateUser_NotFound() throws Exception {
         // Arrange
-        when(userService.getUserById("nonexistent")).thenReturn(null);
+        when(userService.getUserByUsername("nonexistent")).thenReturn(null);
 
         Map<String, String> updateData = new HashMap<>();
         updateData.put("firstName", "Updated");
@@ -250,7 +250,7 @@ class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
 
-        verify(userService).getUserById("nonexistent");
+        verify(userService).getUserByUsername("nonexistent");
         verify(userService, never()).updateUser(any(User.class));
     }
 
@@ -258,24 +258,24 @@ class UserControllerTest {
     @WithMockUser
     void testDeleteUser_Success() throws Exception {
         // Arrange
-        when(userService.getUserById("user-123")).thenReturn(testUser);
-        doNothing().when(userService).deleteUser("user-123");
+        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
+        doNothing().when(userService).deleteUser("testuser");
 
         // Act & Assert
-        mockMvc.perform(delete("/api/users/user-123")
+        mockMvc.perform(delete("/api/users/testuser")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuario eliminado correctamente"));
 
-        verify(userService).getUserById("user-123");
-        verify(userService).deleteUser("user-123");
+        verify(userService).getUserByUsername("testuser");
+        verify(userService).deleteUser("testuser");
     }
 
     @Test
     @WithMockUser
     void testDeleteUser_NotFound() throws Exception {
         // Arrange
-        when(userService.getUserById("nonexistent")).thenReturn(null);
+        when(userService.getUserByUsername("nonexistent")).thenReturn(null);
 
         // Act & Assert
         mockMvc.perform(delete("/api/users/nonexistent")
@@ -283,7 +283,7 @@ class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
 
-        verify(userService).getUserById("nonexistent");
+        verify(userService).getUserByUsername("nonexistent");
         verify(userService, never()).deleteUser(any());
     }
 

@@ -51,10 +51,17 @@ public class OrderController {
             log.info("Usuario {} creando orden desde carrito {}", 
                 principal.getName(), request.getCartId());
             
+            // Obtener el usuario autenticado
+            User currentUser = userService.getUserByEmail(principal.getName());
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("error", "Usuario no encontrado"));
+            }
+            
             Order order = orderService.createOrderFromCart(
                 request.getCartId(),
-                request.getDeliveryAddress(),
-                request.getPaymentMethod()
+                currentUser.getId(),
+                request
             );
             
             return ResponseEntity.status(HttpStatus.CREATED).body(order);
@@ -66,7 +73,7 @@ public class OrderController {
         } catch (ExecutionException | InterruptedException e) {
             log.error("Error al crear orden", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno del servidor");
+                .body(java.util.Map.of("error", "Error interno del servidor"));
         }
     }
 
@@ -83,13 +90,15 @@ public class OrderController {
             Order order = orderService.getOrderById(orderId);
             
             if (order == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("error", "Orden no encontrada"));
             }
 
             // Los usuarios solo pueden ver sus propias órdenes, los admin pueden ver todas
             User currentUser = userService.getUserByEmail(principal.getName());
             if (!currentUser.getRoles().contains("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
-                throw new RuntimeException("No autorizado para ver esta orden");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(java.util.Map.of("error", "No autorizado para ver esta orden"));
             }
 
             return ResponseEntity.ok(order);
@@ -97,7 +106,7 @@ public class OrderController {
         } catch (ExecutionException | InterruptedException e) {
             log.error("Error al obtener orden {}", orderId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno del servidor");
+                .body(java.util.Map.of("error", "Error interno del servidor"));
         }
     }
 

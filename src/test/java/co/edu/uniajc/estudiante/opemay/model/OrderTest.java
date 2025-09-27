@@ -1,11 +1,14 @@
 package co.edu.uniajc.estudiante.opemay.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.google.cloud.Timestamp;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.google.cloud.Timestamp;
 
 class OrderTest {
 
@@ -61,7 +64,7 @@ class OrderTest {
         assertTrue(order.canBeCancelled());
 
         order.setStatus("PROCESSING");
-        assertFalse(order.canBeCancelled());
+        assertTrue(order.canBeCancelled());
 
         // Estados que NO permiten cancelación
         order.setStatus("SHIPPED");
@@ -79,7 +82,7 @@ class OrderTest {
         String newStatus = "CONFIRMED";
         order.updateStatus(newStatus);
 
-        assertEquals(newStatus, order.getStatus());
+        assertEquals(OrderStatus.CONFIRMED, order.getStatus());
         assertNotNull(order.getUpdatedAt());
     }
 

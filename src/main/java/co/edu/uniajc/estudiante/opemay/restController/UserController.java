@@ -1,11 +1,22 @@
 package co.edu.uniajc.estudiante.opemay.restController;
 
-import com.google.cloud.Timestamp;
 import java.util.Arrays;
 import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.google.cloud.Timestamp;
+
 import co.edu.uniajc.estudiante.opemay.Service.UserService;
 import co.edu.uniajc.estudiante.opemay.model.User;
 import lombok.RequiredArgsConstructor;
@@ -91,7 +102,8 @@ public class UserController {
             User user = userService.getUserByUsername(username);
 
             if (user == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(ERROR, "Usuario no encontrado"));
             }
 
             return ResponseEntity.ok(Map.of(
@@ -147,7 +159,8 @@ public class UserController {
             User existingUser = userService.getUserByUsername(username);
 
             if (existingUser == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(ERROR, "Usuario no encontrado"));
             }
 
             if (userData.containsKey(FIRST_NAME)) {
@@ -182,7 +195,8 @@ public class UserController {
             User user = userService.getUserByUsername(username);
 
             if (user == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(ERROR, "Usuario no encontrado"));
             }
 
             userService.deleteUser(user.getId());

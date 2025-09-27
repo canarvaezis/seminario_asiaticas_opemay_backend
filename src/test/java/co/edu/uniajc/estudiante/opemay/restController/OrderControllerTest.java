@@ -111,7 +111,7 @@ class OrderControllerTest {
     @WithMockUser(roles = "USER", username = "testuser")
     void testCreateOrder_Success() throws Exception {
         // Arrange
-        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userService.getUserByEmail("testuser")).thenReturn(testUser);
         when(orderService.createOrderFromCart(eq("cart-123"), eq("user-123"), any(CreateOrderRequest.class)))
                 .thenReturn(testOrder);
 
@@ -125,7 +125,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.totalAmount").value(99.99))
                 .andExpect(jsonPath("$.status").value("PENDING"));
 
-        verify(userService).getUserByUsername("testuser");
+        verify(userService).getUserByEmail("testuser");
         verify(orderService).createOrderFromCart(eq("cart-123"), eq("user-123"), any(CreateOrderRequest.class));
     }
 
@@ -133,7 +133,7 @@ class OrderControllerTest {
     @WithMockUser(roles = "USER", username = "testuser")
     void testCreateOrder_UserNotFound() throws Exception {
         // Arrange
-        when(userService.getUserByUsername("testuser")).thenReturn(null);
+        when(userService.getUserByEmail("testuser")).thenReturn(null);
 
         // Act & Assert
         mockMvc.perform(post("/api/orders")
@@ -142,7 +142,7 @@ class OrderControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").exists());
 
-        verify(userService).getUserByUsername("testuser");
+        verify(userService).getUserByEmail("testuser");
         verify(orderService, never()).createOrderFromCart(anyString(), anyString(), any(CreateOrderRequest.class));
     }
 
@@ -150,7 +150,7 @@ class OrderControllerTest {
     @WithMockUser(roles = "USER", username = "testuser")
     void testCreateOrder_ExecutionException() throws Exception {
         // Arrange
-        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userService.getUserByEmail("testuser")).thenReturn(testUser);
         when(orderService.createOrderFromCart(anyString(), anyString(), any(CreateOrderRequest.class)))
                 .thenThrow(new ExecutionException("Database error", new RuntimeException()));
 
@@ -161,7 +161,7 @@ class OrderControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").exists());
 
-        verify(userService).getUserByUsername("testuser");
+        verify(userService).getUserByEmail("testuser");
         verify(orderService).createOrderFromCart(anyString(), anyString(), any(CreateOrderRequest.class));
     }
 
@@ -169,7 +169,7 @@ class OrderControllerTest {
     @WithMockUser(roles = "USER", username = "testuser")
     void testGetMyOrders_Success() throws Exception {
         // Arrange
-        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userService.getUserByEmail("testuser")).thenReturn(testUser);
         when(orderService.getUserOrders("user-123")).thenReturn(testOrders);
 
         // Act & Assert
@@ -181,7 +181,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$[0].id").value("order-123"))
                 .andExpect(jsonPath("$[1].id").value("order-456"));
 
-        verify(userService).getUserByUsername("testuser");
+        verify(userService).getUserByEmail("testuser");
         verify(orderService).getUserOrders("user-123");
     }
 
@@ -189,7 +189,7 @@ class OrderControllerTest {
     @WithMockUser(roles = "USER", username = "testuser")
     void testGetOrderById_Success() throws Exception {
         // Arrange
-        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userService.getUserByEmail("testuser")).thenReturn(testUser);
         when(orderService.getOrderById("order-123")).thenReturn(testOrder);
 
         // Act & Assert
@@ -199,7 +199,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.id").value("order-123"))
                 .andExpect(jsonPath("$.userId").value("user-123"));
 
-        verify(userService).getUserByUsername("testuser");
+        verify(userService).getUserByEmail("testuser");
         verify(orderService).getOrderById("order-123");
     }
 
@@ -207,7 +207,7 @@ class OrderControllerTest {
     @WithMockUser(roles = "USER", username = "testuser")
     void testGetOrderById_NotFound() throws Exception {
         // Arrange
-        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userService.getUserByEmail("testuser")).thenReturn(testUser);
         when(orderService.getOrderById("nonexistent")).thenReturn(null);
 
         // Act & Assert
@@ -216,7 +216,7 @@ class OrderControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").exists());
 
-        verify(userService).getUserByUsername("testuser");
+        verify(userService).getUserByEmail("testuser");
         verify(orderService).getOrderById("nonexistent");
     }
 
@@ -229,7 +229,7 @@ class OrderControllerTest {
                 .userId("other-user")
                 .build();
                 
-        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userService.getUserByEmail("testuser")).thenReturn(testUser);
         when(orderService.getOrderById("order-999")).thenReturn(otherUserOrder);
 
         // Act & Assert
@@ -238,7 +238,7 @@ class OrderControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").exists());
 
-        verify(userService).getUserByUsername("testuser");
+        verify(userService).getUserByEmail("testuser");
         verify(orderService).getOrderById("order-999");
     }
 
