@@ -1,5 +1,6 @@
 package co.edu.uniajc.estudiante.opemay.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.cloud.Timestamp;
@@ -48,6 +49,7 @@ public class Product {
     /**
      * Valida que el producto tenga los datos mínimos requeridos
      */
+    @JsonIgnore
     public boolean isValid() {
         return name != null && !name.trim().isEmpty() &&
                price != null && price > 0;
@@ -56,6 +58,7 @@ public class Product {
     /**
      * Verifica si el producto está disponible para la venta
      */
+    @JsonIgnore
     public boolean isAvailable() {
         return active && (stock == null || stock > 0);
     }

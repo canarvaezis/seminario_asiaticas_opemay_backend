@@ -9,7 +9,7 @@ public class UpdatePaymentStatusRequest {
 
     @NotBlank(message = "El estado de pago es requerido")
     @Pattern(
-        regexp = "PENDING|PROCESSING|COMPLETED|FAILED|REFUNDED",
+        regexp = "PENDING|PAID|FAILED|REFUNDED|CANCELLED",
         message = "Estado de pago no válido"
     )
     private String paymentStatus;

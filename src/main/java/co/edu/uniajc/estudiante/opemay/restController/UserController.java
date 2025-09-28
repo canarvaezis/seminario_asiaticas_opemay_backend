@@ -84,9 +84,11 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
                             MESSAGE, "Usuario creado exitosamente",
-                            USERNAME, createdUser.getUsername(),
-                            EMAIL, createdUser.getEmail(),
-                            "id", createdUser.getId()
+                            "user", Map.of(
+                                    USERNAME, createdUser.getUsername(),
+                                    EMAIL, createdUser.getEmail(),
+                                    "id", createdUser.getId()
+                            )
                     ));
 
         } catch (Exception e) {
@@ -179,7 +181,13 @@ public class UserController {
 
             return ResponseEntity.ok(Map.of(
                     MESSAGE, "Usuario actualizado exitosamente",
-                    USERNAME, updatedUser.getUsername()
+                    "user", Map.of(
+                            USERNAME, updatedUser.getUsername(),
+                            EMAIL, updatedUser.getEmail(),
+                            FIRST_NAME, updatedUser.getFirstName(),
+                            LAST_NAME, updatedUser.getLastName(),
+                            "id", updatedUser.getId()
+                    )
             ));
 
         } catch (Exception e) {
@@ -202,7 +210,7 @@ public class UserController {
             userService.deleteUser(user.getId());
 
             return ResponseEntity.ok(Map.of(
-                    MESSAGE, "Usuario eliminado exitosamente",
+                    MESSAGE, "Usuario eliminado correctamente",
                     USERNAME, username
             ));
 

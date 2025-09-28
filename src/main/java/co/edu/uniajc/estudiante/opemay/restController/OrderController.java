@@ -68,7 +68,8 @@ public class OrderController {
             
         } catch (IllegalArgumentException e) {
             log.warn("Error en validación al crear orden: {}", e.getMessage());
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(java.util.Map.of("error", "Error: " + e.getMessage()));
             
         } catch (ExecutionException | InterruptedException e) {
             log.error("Error al crear orden", e);
@@ -87,6 +88,13 @@ public class OrderController {
             Principal principal) {
         
         try {
+            // Primero validar el usuario autenticado
+            User currentUser = userService.getUserByEmail(principal.getName());
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(java.util.Map.of("error", "Usuario no autenticado"));
+            }
+            
             Order order = orderService.getOrderById(orderId);
             
             if (order == null) {
@@ -95,7 +103,6 @@ public class OrderController {
             }
 
             // Los usuarios solo pueden ver sus propias órdenes, los admin pueden ver todas
-            User currentUser = userService.getUserByEmail(principal.getName());
             if (!currentUser.getRoles().contains("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(java.util.Map.of("error", "No autorizado para ver esta orden"));
@@ -159,7 +166,7 @@ public class OrderController {
         } catch (ExecutionException | InterruptedException e) {
             log.error("Error al obtener órdenes por estado {}", status, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno del servidor");
+                .body(java.util.Map.of("error", "Error interno del servidor"));
         }
     }
 
@@ -176,16 +183,23 @@ public class OrderController {
             log.info("Actualizando estado de orden {} a {}", orderId, request.getStatus());
             
             Order updatedOrder = orderService.updateOrderStatus(orderId, request.getStatus());
+            
+            if (updatedOrder == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("error", "Orden no encontrada"));
+            }
+            
             return ResponseEntity.ok(updatedOrder);
             
         } catch (IllegalArgumentException e) {
             log.warn("Error en validación al actualizar estado: {}", e.getMessage());
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(java.util.Map.of("error", "Error: " + e.getMessage()));
             
         } catch (ExecutionException | InterruptedException e) {
             log.error("Error al actualizar estado de orden {}", orderId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno del servidor");
+                .body(java.util.Map.of("error", "Error interno del servidor"));
         }
     }
 
@@ -239,16 +253,23 @@ public class OrderController {
                 orderId, request.getPaymentStatus());
             
             Order updatedOrder = orderService.updatePaymentStatus(orderId, request.getPaymentStatus());
+            
+            if (updatedOrder == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("error", "Orden no encontrada"));
+            }
+            
             return ResponseEntity.ok(updatedOrder);
             
         } catch (IllegalArgumentException e) {
             log.warn("Error al actualizar estado de pago: {}", e.getMessage());
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(java.util.Map.of("error", "Error: " + e.getMessage()));
             
         } catch (ExecutionException | InterruptedException e) {
             log.error("Error al actualizar estado de pago de orden {}", orderId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno del servidor");
+                .body(java.util.Map.of("error", "Error interno del servidor"));
         }
     }
 

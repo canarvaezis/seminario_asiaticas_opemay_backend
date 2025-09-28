@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.cloud.Timestamp;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +64,12 @@ class UserControllerTest {
                 .firstName("Test")
                 .lastName("User")
                 .enabled(true)
+                .accountNonExpired(true)
+                .accountNonLocked(true)
+                .credentialsNonExpired(true)
+                .roles(Arrays.asList("USER"))
+                .createdAt(Timestamp.now())
+                .lastLogin(null)
                 .build();
 
         userData = new HashMap<>();

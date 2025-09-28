@@ -277,7 +277,7 @@ class OrderControllerTest {
                 .status(OrderStatus.CONFIRMED)
                 .build();
         
-        when(orderService.updateOrderStatus("order-123", OrderStatus.CONFIRMED))
+        when(orderService.updateOrderStatus("order-123", "CONFIRMED"))
                 .thenReturn(updatedOrder);
 
         // Act & Assert
@@ -288,14 +288,14 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.id").value("order-123"))
                 .andExpect(jsonPath("$.status").value("CONFIRMED"));
 
-        verify(orderService).updateOrderStatus("order-123", OrderStatus.CONFIRMED);
+        verify(orderService).updateOrderStatus("order-123", "CONFIRMED");
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void testUpdateOrderStatus_NotFound() throws Exception {
         // Arrange
-        when(orderService.updateOrderStatus("nonexistent", OrderStatus.CONFIRMED))
+        when(orderService.updateOrderStatus("nonexistent", "CONFIRMED"))
                 .thenReturn(null);
 
         // Act & Assert
@@ -305,7 +305,7 @@ class OrderControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").exists());
 
-        verify(orderService).updateOrderStatus("nonexistent", OrderStatus.CONFIRMED);
+        verify(orderService).updateOrderStatus("nonexistent", "CONFIRMED");
     }
 
     @Test
@@ -317,7 +317,7 @@ class OrderControllerTest {
                 .paymentStatus(PaymentStatus.PAID)
                 .build();
         
-        when(orderService.updatePaymentStatus("order-123", PaymentStatus.PAID))
+        when(orderService.updatePaymentStatus("order-123", "PAID"))
                 .thenReturn(updatedOrder);
 
         // Act & Assert
@@ -328,7 +328,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.id").value("order-123"))
                 .andExpect(jsonPath("$.paymentStatus").value("PAID"));
 
-        verify(orderService).updatePaymentStatus("order-123", PaymentStatus.PAID);
+        verify(orderService).updatePaymentStatus("order-123", "PAID");
     }
 
     @Test
@@ -380,17 +380,16 @@ class OrderControllerTest {
     void testGetOrdersByStatus_Success() throws Exception {
         // Arrange
         List<Order> pendingOrders = Arrays.asList(testOrder);
-        when(orderService.getOrdersByStatus(OrderStatus.PENDING)).thenReturn(pendingOrders);
+        when(orderService.getOrdersByStatus("PENDING")).thenReturn(pendingOrders);
 
         // Act & Assert
-        mockMvc.perform(get("/api/orders/admin/status")
-                .param("status", "PENDING")
+        mockMvc.perform(get("/api/orders/admin/status/PENDING")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].status").value("PENDING"));
 
-        verify(orderService).getOrdersByStatus(OrderStatus.PENDING);
+        verify(orderService).getOrdersByStatus("PENDING");
     }
 }
