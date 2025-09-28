@@ -128,7 +128,7 @@ public class UserController {
         }
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<?> getAllUsers() {
         try {
             var users = userService.getAllUsers();
