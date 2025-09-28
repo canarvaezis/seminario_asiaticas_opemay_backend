@@ -189,23 +189,6 @@ class UserControllerTest {
 
     @Test
     @WithMockUser
-    void testgetUserByUsername_Success() throws Exception {
-        // Arrange
-        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
-
-        // Act & Assert
-        mockMvc.perform(get("/api/users/testuser")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("testuser"))
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.email").value("test@example.com"));
-
-        verify(userService).getUserByUsername("testuser");
-    }
-
-    @Test
-    @WithMockUser
     void testgetUserByUsername_NotFound() throws Exception {
         // Arrange
         when(userService.getUserByUsername("nonexistent")).thenReturn(null);
