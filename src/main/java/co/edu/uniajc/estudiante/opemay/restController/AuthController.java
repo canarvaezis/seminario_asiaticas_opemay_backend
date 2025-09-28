@@ -1,18 +1,24 @@
 package co.edu.uniajc.estudiante.opemay.restController;
 
-import co.edu.uniajc.estudiante.opemay.dto.LoginRequest;
-import co.edu.uniajc.estudiante.opemay.dto.RegisterRequest;
-import co.edu.uniajc.estudiante.opemay.Service.JwtService;
-import co.edu.uniajc.estudiante.opemay.Service.UserService;
-import co.edu.uniajc.estudiante.opemay.model.User;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import co.edu.uniajc.estudiante.opemay.Service.JwtService;
+import co.edu.uniajc.estudiante.opemay.Service.UserService;
+import co.edu.uniajc.estudiante.opemay.dto.LoginRequest;
+import co.edu.uniajc.estudiante.opemay.model.User;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,10 +34,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            log.info("Intento de login para usuario: {}", loginRequest.getUsername());
+            log.info("Intento de login para usuario: {}", loginRequest.getEmail());
             
             // Buscar usuario
-            User user = userService.getUserByUsername(loginRequest.getUsername());
+            User user = userService.getUserByEmail(loginRequest.getEmail());
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Usuario no encontrado"));
@@ -46,65 +52,23 @@ public class AuthController {
             // Generar token JWT
             String jwt = jwtService.generateTokenFromUsername(user.getUsername());
             
-            log.info("Login exitoso para usuario: {}", loginRequest.getUsername());
+            log.info("Login exitoso para usuario: {}", loginRequest.getEmail());
             
             return ResponseEntity.ok(Map.of(
                 "token", jwt,
                 "type", "Bearer",
-                "username", user.getUsername()
+                "email", user.getEmail()
             ));
             
         } catch (Exception e) {
             log.error("Error de autenticación para usuario: {} - {}", 
-                loginRequest.getUsername(), e.getMessage());
+                loginRequest.getEmail(), e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "Error de autenticación"));
         }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
-        try {
-            log.info("Intento de registro para usuario: {}", registerRequest.getUsername());
-            
-            // Verificar si el usuario ya existe
-            if (userService.getUserByUsername(registerRequest.getUsername()) != null) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "El nombre de usuario ya existe"));
-            }
 
-            if (userService.getUserByEmail(registerRequest.getEmail()) != null) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "El email ya está registrado"));
-            }
-
-            // Crear usuario basado en RegisterRequest
-            User newUser = User.builder()
-                .username(registerRequest.getUsername())
-                .email(registerRequest.getEmail())
-                .password(registerRequest.getPassword())
-                .firstName(registerRequest.getFirstName())
-                .lastName(registerRequest.getLastName())
-                .roles(java.util.Arrays.asList("USER"))
-                .enabled(true)
-                .build();
-
-            User createdUser = userService.createUser(newUser);
-            
-            log.info("Usuario registrado exitosamente: {}", registerRequest.getUsername());
-            
-            return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of(
-                    "message", "Usuario registrado exitosamente",
-                    "username", createdUser.getUsername()
-                ));
-                
-        } catch (Exception e) {
-            log.error("Error durante el registro: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Error interno del servidor"));
-        }
-    }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String authHeader) {

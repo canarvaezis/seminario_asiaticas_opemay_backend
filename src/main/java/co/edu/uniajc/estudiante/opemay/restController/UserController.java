@@ -19,6 +19,12 @@ import com.google.cloud.Timestamp;
 
 import co.edu.uniajc.estudiante.opemay.Service.UserService;
 import co.edu.uniajc.estudiante.opemay.model.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,6 +33,25 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@Tag(
+    name = "👤 Gestión de Usuarios", 
+    description = """
+        ## 🎯 API para Gestión Completa de Usuarios
+        
+        Endpoints para crear, consultar, actualizar y eliminar usuarios en OpemAy Fruit Shop.
+        
+        ### ✨ Funcionalidades:
+        - ✅ **Registro de usuarios** sin autenticación
+        - ✅ **CRUD completo** con autenticación JWT
+        - ✅ **Validación** de datos robusta
+        - ✅ **Encriptación** de contraseñas con Bcrypt
+        - ✅ **Firestore** como base de datos
+        
+        ### 🔐 Autenticación:
+        - **Público**: Solo registro (`POST /register`)
+        - **Protegido**: Todos los demás endpoints requieren JWT
+        """
+)
 public class UserController {
 
     // 🔹 Constantes para evitar duplicar literales
@@ -41,7 +66,89 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> createUser(@RequestBody Map<String, String> userData) {
+    @Operation(
+        summary = "🆕 Registrar Nuevo Usuario",
+        description = """
+            ## ✨ Crea un nuevo usuario en el sistema
+            
+            **📝 Este endpoint es PÚBLICO** - No requiere autenticación.
+            
+            ### ⚡ Validaciones Automáticas:
+            - ✅ **Username único** - No puede existir otro usuario con el mismo nombre
+            - ✅ **Email único** - No puede existir otro usuario con el mismo email
+            - ✅ **Campos requeridos** - username, password, email son obligatorios
+            - ✅ **Encriptación** - Password automáticamente hasheado con Bcrypt
+            
+            ### 🏪 Datos Opcionales:
+            - `firstName` - Nombre del usuario
+            - `lastName` - Apellido del usuario
+            
+            El usuario se crea con rol **USER** por defecto.
+            """,
+        tags = {"👤 Gestión de Usuarios"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201", 
+            description = "✅ Usuario creado exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = """
+                    {
+                      "message": "Usuario creado exitosamente",
+                      "user": {
+                        "username": "johndoe",
+                        "email": "john@example.com",
+                        "id": "abc123-def456-ghi789"
+                      }
+                    }
+                    """)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "❌ Error de validación",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = """
+                    {
+                      "error": "El nombre de usuario ya existe"
+                    }
+                    """)
+            )
+        )
+    })
+    public ResponseEntity<?> createUser(
+        @RequestBody 
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = """
+                ## 📋 Datos del Nuevo Usuario
+                
+                **Campos requeridos:**
+                - `username` - Nombre de usuario único
+                - `password` - Contraseña (será encriptada)
+                - `email` - Email único válido
+                
+                **Campos opcionales:**
+                - `firstName` - Nombre
+                - `lastName` - Apellido
+                """,
+            content = @Content(
+                examples = @ExampleObject(
+                    name = "Usuario Ejemplo",
+                    value = """
+                        {
+                          "username": "johndoe",
+                          "password": "password123",
+                          "email": "john@example.com",
+                          "firstName": "John",
+                          "lastName": "Doe"
+                        }
+                        """
+                )
+            )
+        )
+        Map<String, String> userData) {
         try {
             log.info("Creando nuevo usuario: {}", userData.get(USERNAME));
 

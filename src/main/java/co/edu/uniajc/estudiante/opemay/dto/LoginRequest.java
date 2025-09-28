@@ -19,4 +19,7 @@ public class LoginRequest {
     
     @NotBlank(message = "El password no puede estar vacío")
     private String password;
+
+    @NotBlank(message = "El email no puede estar vacío")
+    private String email;
 }
