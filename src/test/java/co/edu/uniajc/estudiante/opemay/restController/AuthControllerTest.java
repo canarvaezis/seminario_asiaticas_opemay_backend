@@ -71,6 +71,7 @@ class AuthControllerTest {
         loginRequest = new LoginRequest();
         loginRequest.setUsername("testuser");
         loginRequest.setPassword("password123");
+        loginRequest.setEmail("testuser@example.com");
 
         registerRequest = new RegisterRequest();
         registerRequest.setUsername("newuser");
@@ -84,7 +85,7 @@ class AuthControllerTest {
     @WithMockUser
     void testLogin_Success() throws Exception {
         // Arrange
-        when(userService.getUserByUsername("testuser")).thenReturn(testUser);
+        when(userService.getUserByEmail("testuser@example.com")).thenReturn(testUser);
         when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
         when(jwtService.generateTokenFromUsername("testuser")).thenReturn("jwt-token");
 
@@ -95,7 +96,7 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("jwt-token"))
                 .andExpect(jsonPath("$.type").value("Bearer"))
-                .andExpect(jsonPath("$.username").value("testuser"));
+                .andExpect(jsonPath("$.email").value("testuser@example.com"));
 
         verify(userService).getUserByUsername("testuser");
         verify(passwordEncoder).matches("password123", "encodedPassword");
@@ -288,9 +289,11 @@ class AuthControllerTest {
         LoginRequest request = new LoginRequest();
         request.setUsername("testuser");
         request.setPassword("password");
+        request.setEmail("testuser@example.com");
         
         assertEquals("testuser", request.getUsername());
         assertEquals("password", request.getPassword());
+        assertEquals("testuser@example.com", request.getEmail());
     }
 
     @Test
