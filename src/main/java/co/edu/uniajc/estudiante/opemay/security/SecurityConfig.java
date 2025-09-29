@@ -37,6 +37,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuración CORS
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/home", "/index", "/status").permitAll()
@@ -56,5 +57,36 @@ public class SecurityConfig {
             .headers(headers -> headers.disable()); // Para H2 console
         
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+
+        configuration.addAllowedOrigin("http://localhost:51346"); 
+ 
+        
+        // Permitir todos los métodos HTTP
+        configuration.addAllowedMethod("GET");
+        configuration.addAllowedMethod("POST");
+        configuration.addAllowedMethod("PUT");
+        configuration.addAllowedMethod("DELETE");
+        configuration.addAllowedMethod("OPTIONS");
+        configuration.addAllowedMethod("PATCH");
+        
+        // Permitir todos los headers
+        configuration.addAllowedHeader("*");
+        
+        // Permitir credenciales (cookies, authorization headers, etc.)
+        configuration.setAllowCredentials(true);
+        
+        // Configurar tiempo de cache para preflight requests
+        configuration.setMaxAge(3600L);
+        
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = 
+            new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
     }
 }
