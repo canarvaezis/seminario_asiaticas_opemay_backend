@@ -9,11 +9,9 @@ jobs:
   sonarcloud:
     runs-on: ubuntu-latest
     steps:
-      # Clonar el repositorio
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Configurar JDK 21
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -21,27 +19,16 @@ jobs:
           java-version: 21
           cache: gradle
 
-      # Dar permisos de ejecución a gradlew
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
-      # Configurar Firebase como variable de entorno
       - name: Set up Firebase config
-        run: |
-          echo "FIREBASE_CONFIG_03=${{ secrets.FIREBASE_CONFIG_03 }}" >> $GITHUB_ENV
+        run: echo "FIREBASE_CONFIG_03=${{ secrets.FIREBASE_CONFIG_03 }}" >> $GITHUB_ENV
 
-      # Build + tests + reporte de cobertura
-      - name: Build with Gradle (with tests)
+      - name: Build + tests + coverage + SonarCloud
         env:
           FIREBASE_CONFIG_03: ${{ secrets.FIREBASE_CONFIG_03 }}
-        run: ./gradlew clean build jacocoTestReport --no-daemon
-
-      # Escaneo SonarCloud
-      - name: Run SonarCloud
-        env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          FIREBASE_CONFIG_03: ${{ secrets.FIREBASE_CONFIG_03 }}
-        run: ./gradlew sonar --no-daemon
-        
+        run: ./gradlew clean build jacocoTestReport sonarqube --refresh-dependencies --no-daemon
