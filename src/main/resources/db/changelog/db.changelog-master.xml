@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Incluir archivos de cambios específicos -->
+    <include file="db/changelog/v1.0/001-create-audit-tables.xml"/>
+    
+    <!-- Ejemplo de changelog para una tabla de auditoría -->
+    <changeSet id="001-create-product-audit" author="developer">
+        <comment>Crear tabla de auditoría para productos</comment>
+        
+        <createTable tableName="product_audit">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="old_values" type="TEXT"/>
+            <column name="new_values" type="TEXT"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="timestamp" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createIndex tableName="product_audit" indexName="idx_product_audit_product_id">
+            <column name="product_id"/>
+        </createIndex>
+        
+        <createIndex tableName="product_audit" indexName="idx_product_audit_timestamp">
+            <column name="timestamp"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="002-create-system-logs" author="developer">
+        <comment>Crear tabla de logs del sistema</comment>
+        
+        <createTable tableName="system_logs">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="level" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createIndex tableName="system_logs" indexName="idx_system_logs_level">
+            <column name="level"/>
+        </createIndex>
+        
+        <createIndex tableName="system_logs" indexName="idx_system_logs_created_at">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="003-create-cart-audit" author="developer">
+        <comment>Crear tabla de auditoría para carritos</comment>
+        
+        <createTable tableName="cart_audit">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="cart_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="old_values" type="TEXT"/>
+            <column name="new_values" type="TEXT"/>
+            <column name="total_amount" type="DECIMAL(10,2)"/>
+            <column name="total_items" type="INTEGER"/>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="timestamp" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createIndex tableName="cart_audit" indexName="idx_cart_audit_cart_id">
+            <column name="cart_id"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_audit" indexName="idx_cart_audit_user_id">
+            <column name="user_id"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_audit" indexName="idx_cart_audit_timestamp">
+            <column name="timestamp"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_audit" indexName="idx_cart_audit_action">
+            <column name="action"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="004-create-cart-item-audit" author="developer">
+        <comment>Crear tabla de auditoría para items de carrito</comment>
+        
+        <createTable tableName="cart_item_audit">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="cart_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(255)"/>
+            <column name="action" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="old_quantity" type="INTEGER"/>
+            <column name="new_quantity" type="INTEGER"/>
+            <column name="price" type="DECIMAL(10,2)"/>
+            <column name="user_id" type="VARCHAR(255)"/>
+            <column name="timestamp" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createIndex tableName="cart_item_audit" indexName="idx_cart_item_audit_cart_id">
+            <column name="cart_id"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_item_audit" indexName="idx_cart_item_audit_product_id">
+            <column name="product_id"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_item_audit" indexName="idx_cart_item_audit_timestamp">
+            <column name="timestamp"/>
+        </createIndex>
+        
+        <createIndex tableName="cart_item_audit" indexName="idx_cart_item_audit_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
