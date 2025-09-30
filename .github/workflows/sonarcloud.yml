@@ -43,4 +43,5 @@ jobs:
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
           FIREBASE_CONFIG_03: ${{ secrets.FIREBASE_CONFIG_03 }}
-        run: ./gradlew sonarqube --no-daemon
+        run: ./gradlew sonar --no-daemon
+        
