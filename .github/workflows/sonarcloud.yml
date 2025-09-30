@@ -30,10 +30,6 @@ jobs:
         run: |
           echo "FIREBASE_CONFIG_03=${{ secrets.FIREBASE_CONFIG_03 }}" >> $GITHUB_ENV
 
-      # Opcional: evitar problemas de acceso reflejo en Java 21
-      - name: Set JVM options
-        run: echo "JAVA_TOOL_OPTIONS=--add-opens java.base/java.lang=ALL-UNNAMED" >> $GITHUB_ENV
-
       # Build + tests + reporte de cobertura
       - name: Build with Gradle (with tests)
         env:
