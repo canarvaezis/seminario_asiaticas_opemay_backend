@@ -2,8 +2,11 @@ package co.edu.uniajc.estudiante.opemay.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.cloud.Timestamp;
 
+import co.edu.uniajc.estudiante.opemay.config.JacksonConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,8 +43,15 @@ public class User {
     private List<String> roles = List.of("USER");
     
     @Builder.Default
+    @JsonSerialize(using = JacksonConfig.TimestampSerializer.class)
+    @JsonDeserialize(using = JacksonConfig.TimestampDeserializer.class)
     private Timestamp createdAt = Timestamp.now();
     
+    @JsonSerialize(using = JacksonConfig.TimestampSerializer.class)
+    @JsonDeserialize(using = JacksonConfig.TimestampDeserializer.class)
     private Timestamp lastLogin;
+    
+    @JsonSerialize(using = JacksonConfig.TimestampSerializer.class)
+    @JsonDeserialize(using = JacksonConfig.TimestampDeserializer.class)
     private Timestamp updatedAt;
 }

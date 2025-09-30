@@ -6,8 +6,10 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 import lombok.extern.slf4j.Slf4j;
 
+
+
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
-@Slf4j
+@Slf4j  
 public class OpemayApplication {
 
     public static void main(String[] args) {
@@ -15,4 +17,5 @@ public class OpemayApplication {
         SpringApplication.run(OpemayApplication.class, args);
         log.info("Aplicación Opemay iniciada correctamente");
     }
-}
+} 
+  

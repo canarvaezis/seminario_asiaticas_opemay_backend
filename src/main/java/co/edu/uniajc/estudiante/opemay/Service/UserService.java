@@ -1,6 +1,7 @@
 package co.edu.uniajc.estudiante.opemay.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,7 +12,7 @@ import com.google.cloud.Timestamp;
 import co.edu.uniajc.estudiante.opemay.IRespository.UserRepository;
 import co.edu.uniajc.estudiante.opemay.model.User;
 import lombok.extern.slf4j.Slf4j;
-
+    
 @Service
 @Slf4j
 public class UserService {
@@ -140,5 +141,59 @@ public class UserService {
             log.error("Error actualizando último login: {}", e.getMessage());
         }
     }  
+
+    // Métodos compatibles con tests (usando Optional)
+    public Optional<User> findByUsername(String username) {
+        try {
+            User user = userRepository.getUserByUsername(username);
+            return Optional.ofNullable(user);
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("Error buscando usuario por username: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public Optional<User> findByEmail(String email) {
+        try {
+            User user = userRepository.getUserByEmail(email);
+            return Optional.ofNullable(user);
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("Error buscando usuario por email: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public User save(User user) {
+        try {
+            // Si no tiene ID, crear nuevo usuario
+            if (user.getId() == null || user.getId().isEmpty()) {
+                // Generar ID
+                user.setId(java.util.UUID.randomUUID().toString());
+                
+                // Encriptar contraseña si no está encriptada
+                if (user.getPassword() != null && !user.getPassword().startsWith("$")) {
+                    user.setPassword(passwordEncoder.encode(user.getPassword()));
+                }
+                
+                // Establecer timestamps
+                user.setCreatedAt(Timestamp.now());
+                user.setUpdatedAt(Timestamp.now());
+            } else {
+                // Actualizar usuario existente
+                user.setUpdatedAt(Timestamp.now());
+            }
+
+            userRepository.save(user);
+            return user;
+            
+        } catch (ExecutionException e) {
+            log.error("Error guardando usuario: {}", e.getMessage());
+            throw new RuntimeException("Error al guardar usuario", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Error guardando usuario (interrumpido): {}", e.getMessage());
+            throw new RuntimeException("Error al guardar usuario", e);
+        }
+    }
     //esto 
 }

@@ -40,6 +40,11 @@ public class JwtService {
                 .compact();
     }
 
+    // Alias para compatibilidad con tests
+    public String generateToken(String username) {
+        return generateTokenFromUsername(username);
+    }
+
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())

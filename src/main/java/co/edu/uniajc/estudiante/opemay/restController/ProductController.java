@@ -30,6 +30,13 @@ public class ProductController {
     public ResponseEntity<Product> saveProduct(@RequestBody Product product) {
         try {
             log.info("Recibida petición para guardar producto: {}", product.getName());
+            
+            // Validar datos del producto
+            if (!product.isValid()) {
+                log.error("Producto inválido: {}", product);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+            
             Product savedProduct = productService.createProduct(product);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
         } catch (Exception e) {
@@ -66,5 +73,16 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable String categoryId) {
+        try {
+            log.info("Recibida petición para obtener productos de categoría: {}", categoryId);
+            List<Product> products = productService.getProductsByCategory(categoryId);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            log.error("Error obteniendo productos por categoría: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
- 
