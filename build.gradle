@@ -27,8 +27,8 @@ version = '0.0.1-SNAPSHOT'
 description = 'Proyecto de eccomerse para una tienda de frutas'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_24
-    targetCompatibility = JavaVersion.VERSION_24
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 configurations {
 	compileOnly {
