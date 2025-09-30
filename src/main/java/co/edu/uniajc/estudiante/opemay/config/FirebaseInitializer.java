@@ -54,7 +54,7 @@ class FirebaseInitializer {
                 FirebaseApp.initializeApp(options);
                 this.firebaseInitialized = true;
                 log.info("Firebase inicializado exitosamente.");
-            } catch (Exception e) {
+            } catch (IOException e) {
                 log.error("Error inicializando Firebase: {}", e.getMessage());
                 this.firebaseInitialized = false;
             }
