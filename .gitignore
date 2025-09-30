@@ -37,3 +37,6 @@ out/
 .vscode/
 src/main/resources/firebase-key.json
 src/test/resources/firebase-key.json
+
+### ENVIRONMENTS ###
+.env
