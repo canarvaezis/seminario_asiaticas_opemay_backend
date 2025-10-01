@@ -38,5 +38,6 @@ jobs:
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
+            -Dsonar.java.binaries=build/classes/java/main
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
