@@ -31,4 +31,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-        run: ./gradlew clean build jacocoTestReport sonarqube --refresh-dependencies --no-daemon
+        run: ./gradlew clean build jacocoTestReport sonar --refresh-dependencies --no-daemon
