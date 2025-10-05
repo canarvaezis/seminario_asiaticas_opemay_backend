@@ -47,6 +47,8 @@ public class ProductService {
     private static final String ERROR_FIREBASE_SAVE = "Error saving product in Firebase";
     private static final String ERROR_FIREBASE_RETRIEVE = "Error retrieving products from Firebase";
     private static final String ERROR_FIREBASE_GET_BY_ID = "Error retrieving product by ID";
+    private static final String ERROR_FIREBASE_UPDATE = "Error updating product in Firebase";
+    private static final String ERROR_FIREBASE_DELETE = "Error deleting product in Firebase";
     private static final String FALLBACK_NAME = "Producto no disponible temporalmente";
     private static final String FALLBACK_DESCRIPTION = "Servicio no disponible";
     private static final double FALLBACK_PRICE = 0.0;
@@ -364,6 +366,16 @@ public class ProductService {
         Double price = doc.getDouble(FIELD_PRICE);
         Boolean active = doc.getBoolean(FIELD_ACTIVE);
         
+        // Campos adicionales del producto
+        String categoryId = doc.getString("categoryId");
+        String categoryName = doc.getString("categoryName");
+        Long stockLong = doc.getLong("stock");
+        Integer stock = stockLong != null ? stockLong.intValue() : null;
+        String imageUrl = doc.getString("imageUrl");
+        String unit = doc.getString("unit");
+        Double weight = doc.getDouble("weight");
+        String origin = doc.getString("origin");
+        
         // Manejar conversión de timestamps de manera segura
         Timestamp createdAt = convertToTimestamp(doc.get(FIELD_CREATED_AT));
         Timestamp updatedAt = convertToTimestamp(doc.get(FIELD_UPDATED_AT));
@@ -374,6 +386,13 @@ public class ProductService {
                 .description(description)
                 .price(price != null ? price : FALLBACK_PRICE)
                 .active(active != null ? active : Boolean.TRUE)
+                .categoryId(categoryId)
+                .categoryName(categoryName)
+                .stock(stock)
+                .imageUrl(imageUrl)
+                .unit(unit)
+                .weight(weight)
+                .origin(origin)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -454,5 +473,158 @@ public class ProductService {
         log.warn("Fallback activado para getProductsByCategory con categoría: {}. Error: {}", 
                 categoryId, e.getMessage());
         return new ArrayList<>();
+    }
+
+    /**
+     * Actualiza un producto existente en Firestore con Circuit Breaker
+     * 
+     * @param id ID del producto a actualizar
+     * @param product producto con los nuevos datos
+     * @return producto actualizado
+     * @throws IllegalArgumentException si el ID o producto son inválidos
+     * @throws RuntimeException si hay error en la persistencia
+     */
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "updateProductFallback")
+    public Product updateProduct(String id, Product product) {
+        validateProductId(id);
+        validateProduct(product);
+        
+        try {
+            log.info("Actualizando producto con ID: {}", id);
+            
+            // Verificar que el producto existe
+            Product existingProduct = getProductById(id);
+            if (existingProduct == null) {
+                throw new IllegalArgumentException("Producto no encontrado con ID: " + id);
+            }
+            
+            // Mantener ID y timestamps del producto existente
+            product.setId(id);
+            product.setCreatedAt(existingProduct.getCreatedAt());
+            product.setUpdatedAt(Timestamp.now());
+            
+            ApiFuture<WriteResult> future = firestore.collection(PRODUCTS_COLLECTION)
+                    .document(id)
+                    .set(product);
+
+            WriteResult result = future.get();
+            log.info("Producto actualizado en: {}", result.getUpdateTime());
+            return product;
+            
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Proceso interrumpido actualizando producto: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_UPDATE, e);
+        } catch (ExecutionException e) {
+            log.error("Error ejecutando operación de actualización en Firebase: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_UPDATE, e);
+        }
+    }
+
+    /**
+     * Fallback para updateProduct
+     */
+    public Product updateProductFallback(String id, Product product, Exception e) {
+        log.warn("Fallback activado para updateProduct con ID: {}. Error: {}", id, e.getMessage());
+        return Product.builder()
+                .id(id)
+                .name("Error actualizando producto")
+                .description("Servicio no disponible")
+                .price(0.0)
+                .active(false)
+                .updatedAt(Timestamp.now())
+                .build();
+    }
+
+    /**
+     * Elimina un producto (soft delete) marcándolo como inactivo
+     * 
+     * @param id ID del producto a eliminar
+     * @return true si se eliminó correctamente
+     * @throws IllegalArgumentException si el ID es inválido
+     * @throws RuntimeException si hay error en la operación
+     */
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "deleteProductFallback")
+    public boolean deleteProduct(String id) {
+        validateProductId(id);
+        
+        try {
+            log.info("Eliminando producto con ID: {}", id);
+            
+            // Verificar que el producto existe
+            Product existingProduct = getProductById(id);
+            if (existingProduct == null) {
+                throw new IllegalArgumentException("Producto no encontrado con ID: " + id);
+            }
+            
+            // Soft delete: marcar como inactivo
+            existingProduct.setActive(false);
+            existingProduct.setUpdatedAt(Timestamp.now());
+            
+            ApiFuture<WriteResult> future = firestore.collection(PRODUCTS_COLLECTION)
+                    .document(id)
+                    .set(existingProduct);
+
+            WriteResult result = future.get();
+            log.info("Producto eliminado (soft delete) en: {}", result.getUpdateTime());
+            return true;
+            
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Proceso interrumpido eliminando producto: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_DELETE, e);
+        } catch (ExecutionException e) {
+            log.error("Error ejecutando operación de eliminación en Firebase: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_DELETE, e);
+        }
+    }
+
+    /**
+     * Fallback para deleteProduct
+     */
+    public boolean deleteProductFallback(String id, Exception e) {
+        log.warn("Fallback activado para deleteProduct con ID: {}. Error: {}", id, e.getMessage());
+        return false;
+    }
+
+    /**
+     * Elimina un producto permanentemente de Firestore
+     * 
+     * @param id ID del producto a eliminar permanentemente
+     * @return true si se eliminó correctamente
+     * @throws IllegalArgumentException si el ID es inválido
+     * @throws RuntimeException si hay error en la operación
+     */
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "hardDeleteProductFallback")
+    public boolean hardDeleteProduct(String id) {
+        validateProductId(id);
+        
+        try {
+            log.info("Eliminando permanentemente producto con ID: {}", id);
+            
+            ApiFuture<WriteResult> future = firestore.collection(PRODUCTS_COLLECTION)
+                    .document(id)
+                    .delete();
+
+            WriteResult result = future.get();
+            log.info("Producto eliminado permanentemente en: {}", result.getUpdateTime());
+            return true;
+            
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Proceso interrumpido eliminando permanentemente producto: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_DELETE, e);
+        } catch (ExecutionException e) {
+            log.error("Error ejecutando eliminación permanente en Firebase: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_DELETE, e);
+        }
+    }
+
+    /**
+     * Fallback para hardDeleteProduct
+     */
+    public boolean hardDeleteProductFallback(String id, Exception e) {
+        log.warn("Fallback activado para hardDeleteProduct con ID: {}. Error: {}", id, e.getMessage());
+        return false;
     }
 }
