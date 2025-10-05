@@ -1,7 +1,5 @@
 package co.edu.uniajc.estudiante.opemay.security;
 
-import java.util.ArrayList;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,14 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Usuario no encontrado: " + username);
         }
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .authorities(new ArrayList<>()) // Por ahora sin roles específicos
-                .accountExpired(!user.getAccountNonExpired())
-                .accountLocked(!user.getAccountNonLocked())
-                .credentialsExpired(!user.getCredentialsNonExpired())
-                .disabled(!user.getEnabled())
-                .build();
+        // Retornar UserPrincipal en lugar de User estándar
+        return UserPrincipal.create(user);
     }
 }

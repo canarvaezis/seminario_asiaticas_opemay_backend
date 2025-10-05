@@ -53,44 +53,60 @@ public class CartService {
     /**
      * Agrega un producto al carrito
      */
-    public Cart addProductToCart(String userId, String productId, Integer quantity) 
-            throws ExecutionException, InterruptedException {
-        
-        if (quantity == null || quantity <= 0) {
-            throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
-        }
+/**
+ * Agrega un producto al carrito
+ */
+public Cart addProductToCart(String userId, String productId, Integer quantity)
+        throws ExecutionException, InterruptedException {
 
-        // Verificar que el producto existe
-        Product product = productRepository.getProductById(productId);
-        if (product == null) {
-            throw new IllegalArgumentException("Producto no encontrado");
-        }
+    log.info("Solicitud recibida para agregar producto al carrito:");
+    log.info("→ userId: {}", userId);
+    log.info("→ productId: {}", productId);
+    log.info("→ quantity: {}", quantity);
 
-        if (!product.getActive()) {
-            throw new IllegalArgumentException("El producto no está disponible");
-        }
-
-        // Obtener o crear carrito
-        Cart cart = getOrCreateActiveCart(userId);
-
-        // Crear item del carrito
-        CartItem cartItem = CartItem.builder()
-                .productId(productId)
-                .productName(product.getName())
-                .price(product.getPrice())
-                .quantity(quantity)
-                .imageUrl(product.getImageUrl())
-                .build();
-
-        // Agregar item al carrito
-        cart.addItem(cartItem);
-
-        // Guardar carrito
-        cartRepository.update(cart);
-        
-        log.info("Producto {} agregado al carrito del usuario {}", productId, userId);
-        return cart;
+    if (quantity == null || quantity <= 0) {
+        throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
     }
+
+    // Verificar que el producto existe
+    Product product = productRepository.getProductById(productId);
+    if (product == null) {
+        throw new IllegalArgumentException("Producto no encontrado");
+    }
+
+    if (!product.getActive()) {
+        throw new IllegalArgumentException("El producto no está disponible");
+    }
+
+    log.info("Producto encontrado: {}", product);
+
+    // Obtener o crear carrito
+    Cart cart = getOrCreateActiveCart(userId);
+    log.info("Carrito actual (antes de agregar): {}", cart);
+
+    // Crear item del carrito
+    CartItem cartItem = CartItem.builder()
+            .productId(productId)
+            .productName(product.getName())
+            .price(product.getPrice())
+            .quantity(quantity)
+            .imageUrl(product.getImageUrl())
+            .build();
+
+    log.info("Item creado para agregar al carrito: {}", cartItem);
+
+    // Agregar item al carrito
+    cart.addItem(cartItem);
+
+    // Guardar carrito
+    cartRepository.update(cart);
+
+    log.info("Carrito actualizado (después de agregar): {}", cart);
+    log.info("✅ Producto {} agregado correctamente al carrito del usuario {}", productId, userId);
+
+    return cart;
+}
+
 
     /**
      * Actualiza la cantidad de un producto en el carrito

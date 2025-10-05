@@ -6,19 +6,16 @@ import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.google.api.core.ApiFuture;
@@ -83,8 +80,13 @@ class ProductServiceTest {
                 .name("Test Product")
                 .description("Test Description")
                 .price(99.99)
-                .imageUrl("test-image.jpg")
+                .categoryId("CAT-001")
+                .categoryName("Test Category")
                 .stock(10)
+                .imageUrl("test-image.jpg")
+                .unit("kg")
+                .weight(1.5)
+                .origin("Test Origin")
                 .active(true)
                 .createdAt(Timestamp.now())
                 .updatedAt(Timestamp.now())
@@ -175,6 +177,13 @@ class ProductServiceTest {
             when(queryDocumentSnapshot.getString("description")).thenReturn("Test Description");
             when(queryDocumentSnapshot.getDouble("price")).thenReturn(99.99);
             when(queryDocumentSnapshot.getBoolean("active")).thenReturn(true);
+            when(queryDocumentSnapshot.getString("categoryId")).thenReturn("CAT-001");
+            when(queryDocumentSnapshot.getString("categoryName")).thenReturn("Test Category");
+            when(queryDocumentSnapshot.getLong("stock")).thenReturn(10L);
+            when(queryDocumentSnapshot.getString("imageUrl")).thenReturn("test-image.jpg");
+            when(queryDocumentSnapshot.getString("unit")).thenReturn("kg");
+            when(queryDocumentSnapshot.getDouble("weight")).thenReturn(1.5);
+            when(queryDocumentSnapshot.getString("origin")).thenReturn("Test Origin");
             when(queryDocumentSnapshot.get("createdAt")).thenReturn(Timestamp.now());
             when(queryDocumentSnapshot.get("updatedAt")).thenReturn(Timestamp.now());
 
@@ -252,6 +261,13 @@ class ProductServiceTest {
             when(documentSnapshot.getString("description")).thenReturn("Test Description");
             when(documentSnapshot.getDouble("price")).thenReturn(99.99);
             when(documentSnapshot.getBoolean("active")).thenReturn(true);
+            when(documentSnapshot.getString("categoryId")).thenReturn("CAT-001");
+            when(documentSnapshot.getString("categoryName")).thenReturn("Test Category");
+            when(documentSnapshot.getLong("stock")).thenReturn(10L);
+            when(documentSnapshot.getString("imageUrl")).thenReturn("test-image.jpg");
+            when(documentSnapshot.getString("unit")).thenReturn("kg");
+            when(documentSnapshot.getDouble("weight")).thenReturn(1.5);
+            when(documentSnapshot.getString("origin")).thenReturn("Test Origin");
             when(documentSnapshot.get("createdAt")).thenReturn(Timestamp.now());
             when(documentSnapshot.get("updatedAt")).thenReturn(Timestamp.now());
 
