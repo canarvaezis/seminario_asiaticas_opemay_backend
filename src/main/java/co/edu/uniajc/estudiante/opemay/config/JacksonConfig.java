@@ -61,7 +61,7 @@ public final class JacksonConfig {
                 // Intentar parsear como ISO-8601
                 Instant instant = Instant.parse(timestamp);
                 return Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
-            } catch (DateTimeParseException _) {
+            } catch (DateTimeParseException e) {
                 try {
                     // Fallback: intentar parsear como segundos epoch
                     long epochSeconds = Long.parseLong(timestamp);

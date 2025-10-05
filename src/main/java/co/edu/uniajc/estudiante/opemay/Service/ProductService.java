@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -434,12 +433,21 @@ public class ProductService {
      */
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getProductsByCategoryFallback")
     public List<Product> getProductsByCategory(String categoryId) {
+        // ====== LOGGING DE ENTRADA ======
+        log.info("🔹 [ENTRADA] getProductsByCategory recibió:");
+        log.info("🔹 categoryId: '{}'", categoryId);
+        log.info("🔹 categoryId es null: {}", categoryId == null);
+        log.info("🔹 categoryId después de trim: '{}'", categoryId != null ? categoryId.trim() : "null");
+        
         if (categoryId == null || categoryId.trim().isEmpty()) {
+            log.error("❌ [ERROR] ID de categoría no puede estar vacío");
             throw new IllegalArgumentException("ID de categoría no puede estar vacío");
         }
         
         try {
-            log.info("Obteniendo productos para categoría: {}", categoryId);
+            log.info("🔸 [FIRESTORE] Ejecutando consulta para categoría: {}", categoryId);
+            log.info("🔸 [FIRESTORE] Consulta: collection('{}').whereEqualTo('categoryId', '{}').whereEqualTo('active', true).orderBy('name', ASC)", 
+                    PRODUCTS_COLLECTION, categoryId);
             
             ApiFuture<QuerySnapshot> future = firestore.collection(PRODUCTS_COLLECTION)
                     .whereEqualTo("categoryId", categoryId)
@@ -448,20 +456,74 @@ public class ProductService {
                     .get();
             
             List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            List<Product> products = documents.stream()
-                    .map(this::convertDocumentToProduct)
-                    .filter(product -> product != null)
-                    .collect(Collectors.toList());
             
-            log.info("Encontrados {} productos para categoría {}", products.size(), categoryId);
+            // ====== LOGGING DE DOCUMENTOS BRUTOS ======
+            log.info("🔸 [FIRESTORE] Documentos obtenidos de Firebase:");
+            log.info("🔸 [FIRESTORE] Número total de documentos: {}", documents.size());
+            
+            for (int i = 0; i < documents.size(); i++) {
+                QueryDocumentSnapshot doc = documents.get(i);
+                log.info("🔸 [DOCUMENTO {}] ID: {}", i + 1, doc.getId());
+                log.info("🔸 [DOCUMENTO {}] Datos: {}", i + 1, doc.getData());
+                log.info("🔸 [DOCUMENTO {}] categoryId: {}", i + 1, doc.getString("categoryId"));
+                log.info("🔸 [DOCUMENTO {}] name: {}", i + 1, doc.getString("name"));
+                log.info("🔸 [DOCUMENTO {}] active: {}", i + 1, doc.getBoolean("active"));
+                log.info("🔸 [DOCUMENTO {}] price: {}", i + 1, doc.getDouble("price"));
+            }
+            
+            // ====== CONVERSIÓN A PRODUCTOS ======
+            log.info("🔄 [CONVERSIÓN] Iniciando conversión de documentos a productos...");
+            List<Product> products = new ArrayList<>();
+            
+            for (int i = 0; i < documents.size(); i++) {
+                QueryDocumentSnapshot doc = documents.get(i);
+                log.info("🔄 [CONVERSIÓN] Procesando documento {}/{}: {}", i + 1, documents.size(), doc.getId());
+                
+                Product product = convertDocumentToProduct(doc);
+                if (product != null) {
+                    products.add(product);
+                    log.info("✅ [CONVERSIÓN] Producto {} convertido exitosamente:", i + 1);
+                    log.info("✅ [PRODUCTO {}] ID: {}", i + 1, product.getId());
+                    log.info("✅ [PRODUCTO {}] Name: {}", i + 1, product.getName());
+                    log.info("✅ [PRODUCTO {}] Price: {}", i + 1, product.getPrice());
+                    log.info("✅ [PRODUCTO {}] CategoryId: {}", i + 1, product.getCategoryId());
+                    log.info("✅ [PRODUCTO {}] Active: {}", i + 1, product.getActive());
+                    log.info("✅ [PRODUCTO {}] Stock: {}", i + 1, product.getStock());
+                    log.info("✅ [PRODUCTO {}] ImageUrl: {}", i + 1, product.getImageUrl());
+                } else {
+                    log.warn("⚠️ [CONVERSIÓN] Documento {} falló en conversión: {}", i + 1, doc.getId());
+                }
+            }
+            
+            // ====== LOGGING DE SALIDA ======
+            log.info("🔹 [SALIDA] getProductsByCategory está retornando:");
+            log.info("🔹 [SALIDA] Número total de productos: {}", products.size());
+            log.info("🔹 [SALIDA] Productos encontrados para categoría '{}': {}", categoryId, products.size());
+            
+            if (!products.isEmpty()) {
+                log.info("🔹 [SALIDA] Lista detallada de productos:");
+                for (int i = 0; i < products.size(); i++) {
+                    Product p = products.get(i);
+                    log.info("🔹 [SALIDA] Producto {}: [ID: {}, Name: '{}', Price: {}, Active: {}]", 
+                            i + 1, p.getId(), p.getName(), p.getPrice(), p.getActive());
+                }
+            } else {
+                log.warn("🔹 [SALIDA] ⚠️ No se encontraron productos para la categoría: {}", categoryId);
+            }
+            
             return products;
             
         } catch (InterruptedException e) {
-            log.error("Operación interrumpida obteniendo productos por categoría: {}", categoryId);
+            log.error("❌ [ERROR] Operación interrumpida obteniendo productos por categoría: {}", categoryId);
+            log.error("❌ [ERROR] InterruptedException details: {}", e.getMessage());
             Thread.currentThread().interrupt();
             throw new RuntimeException("Error obteniendo productos por categoría: " + categoryId, e);
         } catch (ExecutionException e) {
-            log.error("Error ejecutando consulta para categoría {}: {}", categoryId, e.getMessage());
+            log.error("❌ [ERROR] Error ejecutando consulta para categoría {}: {}", categoryId, e.getMessage());
+            log.error("❌ [ERROR] ExecutionException details: {}", e.getMessage());
+            if (e.getCause() != null) {
+                log.error("❌ [ERROR] Causa raíz: {}", e.getCause().getMessage());
+            }
             throw new RuntimeException("Error obteniendo productos por categoría: " + categoryId, e);
         }
     }

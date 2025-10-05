@@ -48,33 +48,53 @@ public class OrderController {
             Principal principal) {
         
         try {
-            log.info("Usuario {} creando orden desde carrito {}", 
+            // ====== LOGGING DETALLADO DE ENTRADA ======
+            log.info("🔹 [ORDEN] ===== INICIO CREACIÓN DE ORDEN =====");
+            log.info("🔹 [ORDEN] Usuario {} creando orden desde carrito {}", 
                 principal.getName(), request.getCartId());
+            log.info("🔹 [ORDEN] Request completo: {}", request);
+            log.info("🔹 [ORDEN] CartId: '{}'", request.getCartId());
             
-            // Obtener el usuario autenticado
-            User currentUser = userService.getUserByEmail(principal.getName());
-            if (currentUser == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(java.util.Map.of("error", "Usuario no encontrado"));
-            }
+            // ====== CREACIÓN DE ORDEN DIRECTA ======
+            log.info("🔸 [ORDEN] Iniciando creación de orden directamente desde carrito...");
+            log.info("🔸 [ORDEN] El carrito contiene el userId, no necesitamos buscarlo por separado");
+            log.info("🔸 [ORDEN] Parámetros: cartId='{}', deliveryAddress='{}', paymentMethod='{}'", 
+                    request.getCartId(), request.getDeliveryAddress(), request.getPaymentMethod());
             
+            // El orderService.createOrderFromCart obtendrá el userId desde el carrito
             Order order = orderService.createOrderFromCart(
                 request.getCartId(),
-                currentUser.getId(),
-                request
+                request.getDeliveryAddress(),
+                request.getPaymentMethod()
             );
             
+            // ====== LOGGING RESULTADO ORDEN ======
+            if (order != null) {
+                log.info("✅ [ORDEN] Orden creada exitosamente:");
+                log.info("✅ [ORDEN] ID: {}", order.getId());
+                log.info("✅ [ORDEN] Total: {}", order.getTotalAmount());
+                log.info("✅ [ORDEN] Status: {}", order.getStatus());
+                log.info("✅ [ORDEN] Items count: {}", order.getItems() != null ? order.getItems().size() : "null");
+            } else {
+                log.error("❌ [ORDEN] La orden creada es null");
+            }
+            
+            log.info("🔹 [ORDEN] ===== FIN CREACIÓN DE ORDEN =====");
             return ResponseEntity.status(HttpStatus.CREATED).body(order);
             
         } catch (IllegalArgumentException e) {
-            log.warn("Error en validación al crear orden: {}", e.getMessage());
+            log.error("❌ [ERROR] Error en validación al crear orden: {}", e.getMessage(), e);
             return ResponseEntity.badRequest()
                 .body(java.util.Map.of("error", "Error: " + e.getMessage()));
             
         } catch (ExecutionException | InterruptedException e) {
-            log.error("Error al crear orden", e);
+            log.error("❌ [ERROR] Error al crear orden", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(java.util.Map.of("error", "Error interno del servidor"));
+        } catch (Exception e) {
+            log.error("❌ [ERROR] Error inesperado al crear orden", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Map.of("error", "Error inesperado: " + e.getMessage()));
         }
     }
 

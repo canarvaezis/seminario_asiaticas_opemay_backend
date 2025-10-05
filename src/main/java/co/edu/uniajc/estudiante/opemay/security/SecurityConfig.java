@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll() // Permitir registro sin auth
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Solo GET permitido sin auth
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // Categorías públicas
+                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // Categorías públicas
                 // Swagger UI endpoints
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
