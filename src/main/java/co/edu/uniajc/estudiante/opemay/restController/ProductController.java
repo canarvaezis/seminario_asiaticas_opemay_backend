@@ -85,8 +85,11 @@ public class ProductController {
             log.info("Recibida petición para obtener productos de categoría: {}", categoryId);
             List<Product> products = productService.getProductsByCategory(categoryId);
             return ResponseEntity.ok(products);
+        } catch (IllegalArgumentException e) {
+            log.error("Error de validación obteniendo productos por categoría {}: {}", categoryId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
-            log.error("Error obteniendo productos por categoría: {}", e.getMessage());
+            log.error("Error obteniendo productos por categoría {}: {}", categoryId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -119,7 +122,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("    ('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteProduct(@PathVariable String id) {
         try {
             log.info("Recibida petición para eliminar producto con ID: {}", id);

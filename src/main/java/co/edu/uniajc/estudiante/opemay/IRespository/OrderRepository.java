@@ -63,8 +63,7 @@ public class OrderRepository {
     public List<Order> getOrdersByUserId(String userId) throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
         Query query = dbFirestore.collection(COLLECTION_NAME)
-                .whereEqualTo("userId", userId)
-                .orderBy("createdAt", Query.Direction.DESCENDING);
+                .whereEqualTo("userId", userId);
         
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
@@ -73,6 +72,14 @@ public class OrderRepository {
         for (QueryDocumentSnapshot doc : documents) {
             orderList.add(doc.toObject(Order.class));
         }
+
+        // Ordenar en memoria por createdAt descendente
+        orderList.sort((o1, o2) -> {
+            if (o1.getCreatedAt() == null && o2.getCreatedAt() == null) return 0;
+            if (o1.getCreatedAt() == null) return 1;
+            if (o2.getCreatedAt() == null) return -1;
+            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+        });
 
         log.info("Encontradas {} órdenes para usuario: {}", orderList.size(), userId);
         return orderList;
@@ -84,8 +91,7 @@ public class OrderRepository {
     public List<Order> getOrdersByStatus(String status) throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
         Query query = dbFirestore.collection(COLLECTION_NAME)
-                .whereEqualTo("status", status)
-                .orderBy("createdAt", Query.Direction.DESCENDING);
+                .whereEqualTo("status", status);
         
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
@@ -94,6 +100,14 @@ public class OrderRepository {
         for (QueryDocumentSnapshot doc : documents) {
             orderList.add(doc.toObject(Order.class));
         }
+
+        // Ordenar en memoria por createdAt descendente
+        orderList.sort((o1, o2) -> {
+            if (o1.getCreatedAt() == null && o2.getCreatedAt() == null) return 0;
+            if (o1.getCreatedAt() == null) return 1;
+            if (o2.getCreatedAt() == null) return -1;
+            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+        });
 
         log.info("Encontradas {} órdenes con estado: {}", orderList.size(), status);
         return orderList;
@@ -105,7 +119,6 @@ public class OrderRepository {
     public List<Order> getAllOrders() throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
         ApiFuture<QuerySnapshot> future = dbFirestore.collection(COLLECTION_NAME)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
         List<Order> orderList = new ArrayList<>();
@@ -113,6 +126,14 @@ public class OrderRepository {
         for (QueryDocumentSnapshot doc : documents) {
             orderList.add(doc.toObject(Order.class));
         }
+
+        // Ordenar en memoria por createdAt descendente
+        orderList.sort((o1, o2) -> {
+            if (o1.getCreatedAt() == null && o2.getCreatedAt() == null) return 0;
+            if (o1.getCreatedAt() == null) return 1;
+            if (o2.getCreatedAt() == null) return -1;
+            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+        });
 
         log.info("Encontradas {} órdenes en total", orderList.size());
         return orderList;
@@ -129,8 +150,7 @@ public class OrderRepository {
         com.google.cloud.Timestamp limitDate = com.google.cloud.Timestamp.ofTimeMicroseconds(millisecondsAgo * 1000);
         
         Query query = dbFirestore.collection(COLLECTION_NAME)
-                .whereGreaterThan("createdAt", limitDate)
-                .orderBy("createdAt", Query.Direction.DESCENDING);
+                .whereGreaterThan("createdAt", limitDate);
         
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
@@ -139,6 +159,14 @@ public class OrderRepository {
         for (QueryDocumentSnapshot doc : documents) {
             orderList.add(doc.toObject(Order.class));
         }
+
+        // Ordenar en memoria por createdAt descendente
+        orderList.sort((o1, o2) -> {
+            if (o1.getCreatedAt() == null && o2.getCreatedAt() == null) return 0;
+            if (o1.getCreatedAt() == null) return 1;
+            if (o2.getCreatedAt() == null) return -1;
+            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+        });
 
         log.info("Encontradas {} órdenes de los últimos {} días", orderList.size(), days);
         return orderList;

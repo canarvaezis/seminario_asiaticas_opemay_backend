@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
@@ -446,13 +445,13 @@ public class ProductService {
         
         try {
             log.info("🔸 [FIRESTORE] Ejecutando consulta para categoría: {}", categoryId);
-            log.info("🔸 [FIRESTORE] Consulta: collection('{}').whereEqualTo('categoryId', '{}').whereEqualTo('active', true).orderBy('name', ASC)", 
+            log.info("🔸 [FIRESTORE] Consulta: collection('{}').whereEqualTo('categoryId', '{}').whereEqualTo('active', true)", 
                     PRODUCTS_COLLECTION, categoryId);
             
+            // Consulta sin orderBy para evitar el índice compuesto
             ApiFuture<QuerySnapshot> future = firestore.collection(PRODUCTS_COLLECTION)
                     .whereEqualTo("categoryId", categoryId)
                     .whereEqualTo("active", true)
-                    .orderBy("name", Query.Direction.ASCENDING)
                     .get();
             
             List<QueryDocumentSnapshot> documents = future.get().getDocuments();
@@ -494,6 +493,16 @@ public class ProductService {
                     log.warn("⚠️ [CONVERSIÓN] Documento {} falló en conversión: {}", i + 1, doc.getId());
                 }
             }
+            
+            // ====== ORDENACIÓN EN MEMORIA ======
+            log.info("🔄 [ORDENACIÓN] Ordenando productos por nombre...");
+            products.sort((p1, p2) -> {
+                if (p1.getName() == null && p2.getName() == null) return 0;
+                if (p1.getName() == null) return 1;
+                if (p2.getName() == null) return -1;
+                return p1.getName().compareToIgnoreCase(p2.getName());
+            });
+            log.info("✅ [ORDENACIÓN] Productos ordenados correctamente");
             
             // ====== LOGGING DE SALIDA ======
             log.info("🔹 [SALIDA] getProductsByCategory está retornando:");

@@ -49,8 +49,8 @@ public class AuthController {
                     .body(Map.of("error", "Contraseña incorrecta"));
             }
             
-            // Generar token JWT
-            String jwt = jwtService.generateTokenFromUsername(user.getUsername());
+            // Generar token JWT usando email
+            String jwt = jwtService.generateTokenFromEmail(user.getEmail());
             
             log.info("Login exitoso para usuario: {}", loginRequest.getEmail());
             

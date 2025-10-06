@@ -176,7 +176,7 @@ public class OrderService {
         
         log.info("Actualizando estado de orden {} a {}", orderId, newStatus);
         
-        Order order = orderRepository.getOrderById(orderId);
+        Order order = orderRepository.getOrderById(orderId);               
         if (order == null) {
             throw new IllegalArgumentException("Orden no encontrada");
         }
