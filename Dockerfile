@@ -2,31 +2,32 @@
 FROM gradle:8.8-jdk21 AS builder
 WORKDIR /app
 
-# Copiamos solo los archivos de Gradle primero (para cachear dependencias)
+# Copiamos primero los archivos necesarios para cachear dependencias
 COPY build.gradle settings.gradle gradlew gradlew.bat ./
 COPY gradle ./gradle
 
+# Descarga dependencias (cache útil para builds futuros)
 RUN ./gradlew dependencies --no-daemon || true
 
-# Copiamos el resto del proyecto
-COPY . .
+# Copiamos el código fuente
+COPY src ./src
 
-# Compilamos la app (esto generará un .jar en build/libs)
+# Compilamos y generamos el .jar (Spring Boot)
 RUN ./gradlew clean bootJar --no-daemon
 
-# Etapa 2: Imagen final (más ligera)
-FROM eclipse-temurin:21-jre
+# Etapa 2: Imagen final (ligera)
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Copiamos el JAR desde el builder
+# Copiamos solo el .jar desde el builder
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Variables de entorno (puedes sobreescribirlas al correr el contenedor)
+# Variables de entorno configurables
 ENV SPRING_PROFILES_ACTIVE=dev
 ENV JAVA_OPTS=""
 
-# Exponemos el puerto de la app
+# Exponemos el puerto
 EXPOSE 8080
 
-# Comando para arrancar la app
+# Comando de inicio
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

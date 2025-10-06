@@ -12,6 +12,7 @@ public class HomeController {
     @GetMapping("/")
     public ResponseEntity<Map<String, Object>> home() {
         return ResponseEntity.ok(Map.of(
+            "message", "Version estable del producto 1.3.12",
             "message", "¡Bienvenido a Opemay API!",
             "description", "API de comercio electrónico con autenticación JWT",
             "version", "1.0.0",
