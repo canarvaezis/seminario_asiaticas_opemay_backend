@@ -57,23 +57,23 @@ class OrderTest {
     @Test
     void testCanBeCancelled() {
         // Estados que permiten cancelación
-        order.setStatus("PENDING");
+        order.updateStatus("PENDING");
         assertTrue(order.canBeCancelled());
 
-        order.setStatus("CONFIRMED");
+        order.updateStatus("CONFIRMED");
         assertTrue(order.canBeCancelled());
 
-        order.setStatus("PROCESSING");
+        order.updateStatus("PROCESSING");
         assertTrue(order.canBeCancelled());
 
         // Estados que NO permiten cancelación
-        order.setStatus("SHIPPED");
+        order.updateStatus("SHIPPED");
         assertFalse(order.canBeCancelled());
 
-        order.setStatus("DELIVERED");
+        order.updateStatus("DELIVERED");
         assertFalse(order.canBeCancelled());
 
-        order.setStatus("CANCELLED");
+        order.updateStatus("CANCELLED");
         assertFalse(order.canBeCancelled());
     }
 

@@ -59,6 +59,10 @@ class ProductControllerTest {
                 .categoryId("cat-1")
                 .categoryName("Test Category")
                 .stock(100)
+                .imageUrl("test-image.jpg")
+                .unit("kg")
+                .weight(1.5)
+                .origin("Test Origin")
                 .active(true)
                 .build();
 
@@ -70,6 +74,10 @@ class ProductControllerTest {
                 .categoryId("cat-1")
                 .categoryName("Test Category")
                 .stock(50)
+                .imageUrl("another-image.jpg")
+                .unit("units")
+                .weight(0.5)
+                .origin("Another Origin")
                 .active(true)
                 .build();
 
@@ -87,6 +95,10 @@ class ProductControllerTest {
                 .categoryId("cat-456")
                 .categoryName("Test Category")
                 .stock(50)
+                .imageUrl("test-request-image.jpg")
+                .unit("kg")
+                .weight(2.0)
+                .origin("Request Origin")
                 .active(true)
                 .build();
         

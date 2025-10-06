@@ -84,9 +84,7 @@ public class CategoryRepository {
     public List<Category> getAllActiveCategories() throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
         Query query = dbFirestore.collection(COLLECTION_NAME)
-                .whereEqualTo("active", true)
-                .orderBy("sortOrder", Query.Direction.ASCENDING)
-                .orderBy("name", Query.Direction.ASCENDING);
+                .whereEqualTo("active", true);
         
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
@@ -95,6 +93,24 @@ public class CategoryRepository {
         for (QueryDocumentSnapshot doc : documents) {
             categoryList.add(doc.toObject(Category.class));
         }
+
+        // Ordenar en memoria por sortOrder y luego por name
+        categoryList.sort((c1, c2) -> {
+            // Primero ordenar por sortOrder
+            int sortOrderComparison = Integer.compare(
+                c1.getSortOrder() != null ? c1.getSortOrder() : Integer.MAX_VALUE,
+                c2.getSortOrder() != null ? c2.getSortOrder() : Integer.MAX_VALUE
+            );
+            
+            if (sortOrderComparison != 0) {
+                return sortOrderComparison;
+            }
+            
+            // Si sortOrder es igual, ordenar por name
+            String name1 = c1.getName() != null ? c1.getName() : "";
+            String name2 = c2.getName() != null ? c2.getName() : "";
+            return name1.compareToIgnoreCase(name2);
+        });
 
         log.info("Encontradas {} categorías activas", categoryList.size());
         return categoryList;
@@ -105,9 +121,7 @@ public class CategoryRepository {
      */
     public List<Category> getAllCategories() throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
-        Query query = dbFirestore.collection(COLLECTION_NAME)
-                .orderBy("sortOrder", Query.Direction.ASCENDING)
-                .orderBy("name", Query.Direction.ASCENDING);
+        Query query = dbFirestore.collection(COLLECTION_NAME);
         
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
@@ -116,6 +130,24 @@ public class CategoryRepository {
         for (QueryDocumentSnapshot doc : documents) {
             categoryList.add(doc.toObject(Category.class));
         }
+
+        // Ordenar en memoria por sortOrder y luego por name
+        categoryList.sort((c1, c2) -> {
+            // Primero ordenar por sortOrder
+            int sortOrderComparison = Integer.compare(
+                c1.getSortOrder() != null ? c1.getSortOrder() : Integer.MAX_VALUE,
+                c2.getSortOrder() != null ? c2.getSortOrder() : Integer.MAX_VALUE
+            );
+            
+            if (sortOrderComparison != 0) {
+                return sortOrderComparison;
+            }
+            
+            // Si sortOrder es igual, ordenar por name
+            String name1 = c1.getName() != null ? c1.getName() : "";
+            String name2 = c2.getName() != null ? c2.getName() : "";
+            return name1.compareToIgnoreCase(name2);
+        });
 
         log.info("Encontradas {} categorías en total", categoryList.size());
         return categoryList;

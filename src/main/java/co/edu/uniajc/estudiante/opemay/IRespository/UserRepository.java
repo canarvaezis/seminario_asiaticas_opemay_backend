@@ -46,14 +46,23 @@ public class UserRepository {
     }
 
     public User getUserByEmail(String email) throws ExecutionException, InterruptedException {
+        System.out.println("🔍 UserRepository: Buscando usuario con email: '" + email + "'");
         Firestore dbFirestore = FirestoreClient.getFirestore();
         Query query = dbFirestore.collection(COLLECTION_NAME).whereEqualTo("email", email);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
+        System.out.println("🔍 UserRepository: Documentos encontrados: " + documents.size());
+        
         if (!documents.isEmpty()) {
-            return documents.get(0).toObject(User.class);
+            QueryDocumentSnapshot doc = documents.get(0);
+            System.out.println("🔍 UserRepository: Documento encontrado - ID: " + doc.getId());
+            System.out.println("🔍 UserRepository: Datos del documento: " + doc.getData());
+            User user = doc.toObject(User.class);
+            System.out.println("🔍 UserRepository: Usuario convertido - Email: " + user.getEmail());
+            return user;
         }
+        System.out.println("🔍 UserRepository: No se encontró usuario con email: '" + email + "'");
         return null;
     }
 

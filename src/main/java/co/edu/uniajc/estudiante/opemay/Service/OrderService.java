@@ -1,11 +1,12 @@
 package co.edu.uniajc.estudiante.opemay.Service;
 
-import com.google.cloud.Timestamp;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.stereotype.Service;
+
+import com.google.cloud.Timestamp;
 
 import co.edu.uniajc.estudiante.opemay.IRespository.CartRepository;
 import co.edu.uniajc.estudiante.opemay.IRespository.OrderRepository;
@@ -18,6 +19,7 @@ import co.edu.uniajc.estudiante.opemay.model.OrderItem;
 import co.edu.uniajc.estudiante.opemay.model.OrderStatus;
 import co.edu.uniajc.estudiante.opemay.model.PaymentStatus;
 import co.edu.uniajc.estudiante.opemay.model.Product;
+import co.edu.uniajc.estudiante.opemay.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,6 +31,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final UserService userService;
 
     /**
      * Crea una orden desde un carrito
@@ -48,6 +51,19 @@ public class OrderService {
             throw new IllegalArgumentException("El carrito está vacío");
         }
 
+        // ====== BUSCAR INFORMACIÓN COMPLETA DEL USUARIO ======
+        log.info("🔸 [USUARIO] Buscando información del usuario desde el carrito...");
+        User user = userService.getUserById(cart.getUserId());
+        if (user == null) {
+            throw new IllegalArgumentException("Usuario no encontrado con ID: " + cart.getUserId());
+        }
+        
+        log.info("✅ [USUARIO] Usuario encontrado:");
+        log.info("✅ [USUARIO] ID: {}", user.getId());
+        log.info("✅ [USUARIO] Username: {}", user.getUsername());
+        log.info("✅ [USUARIO] Email: {}", user.getEmail());
+        log.info("✅ [USUARIO] Nombre completo: {} {}", user.getFirstName(), user.getLastName());
+
         // Validar stock de todos los productos
         for (CartItem cartItem : cart.getItems()) {
             Product product = productRepository.getProductById(cartItem.getProductId());
@@ -62,7 +78,24 @@ public class OrderService {
         // Crear la orden
         Order order = new Order();
         order.setId(UUID.randomUUID().toString());
-        order.setUserId(cart.getUserId());
+        
+        // ====== ASIGNAR INFORMACIÓN COMPLETA DEL USUARIO ======
+        order.setUserId(user.getId());
+        order.setUserEmail(user.getEmail());
+        order.setUserName(user.getUsername());
+        
+        // Si hay firstName y lastName, crear nombre completo
+        if (user.getFirstName() != null && user.getLastName() != null) {
+            String fullName = user.getFirstName() + " " + user.getLastName();
+            order.setUserName(fullName); // Sobrescribir con nombre completo
+            log.info("✅ [ORDEN] Nombre completo asignado: {}", fullName);
+        }
+        
+        log.info("✅ [ORDEN] Información de usuario asignada:");
+        log.info("✅ [ORDEN] UserId: {}", order.getUserId());
+        log.info("✅ [ORDEN] UserEmail: {}", order.getUserEmail());
+        log.info("✅ [ORDEN] UserName: {}", order.getUserName());
+        
         order.setStatus(OrderStatus.PENDING);
         order.setCreatedAt(Timestamp.now());
         order.setDeliveryAddress(deliveryAddress);
@@ -143,7 +176,7 @@ public class OrderService {
         
         log.info("Actualizando estado de orden {} a {}", orderId, newStatus);
         
-        Order order = orderRepository.getOrderById(orderId);
+        Order order = orderRepository.getOrderById(orderId);               
         if (order == null) {
             throw new IllegalArgumentException("Orden no encontrada");
         }
