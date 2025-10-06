@@ -1,6 +1,8 @@
 package co.edu.uniajc.estudiante.opemay.restController;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -205,28 +207,32 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{username}")
-    public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable String id) {
         try {
-            User user = userService.getUserByUsername(username);
+            User user = userService.getUserById(id);
 
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of(ERROR, "Usuario no encontrado"));
             }
 
-            return ResponseEntity.ok(Map.of(
-                    "id", user.getId(),
-                    USERNAME, user.getUsername(),
-                    EMAIL, user.getEmail(),
-                    FIRST_NAME, user.getFirstName(),
-                    LAST_NAME, user.getLastName(),
-                    "roles", user.getRoles(),
-                    "enabled", user.getEnabled(),
-                    "accountNonExpired", user.getAccountNonExpired(),
-                    "createdAt", user.getCreatedAt(),
-                    "lastLogin", user.getLastLogin()
-            ));
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", user.getId() != null ? user.getId() : "");
+            response.put(USERNAME, user.getUsername() != null ? user.getUsername() : "");
+            response.put(EMAIL, user.getEmail() != null ? user.getEmail() : "");
+            response.put(FIRST_NAME, user.getFirstName() != null ? user.getFirstName() : "");
+            response.put(LAST_NAME, user.getLastName() != null ? user.getLastName() : "");
+            response.put("roles", user.getRoles() != null ? user.getRoles() : List.of());
+            response.put("enabled", Boolean.TRUE.equals(user.getEnabled()));
+            response.put("accountNonExpired", Boolean.TRUE.equals(user.getAccountNonExpired()));
+            response.put("accountNonLocked", Boolean.TRUE.equals(user.getAccountNonLocked()));
+            response.put("credentialsNonExpired", Boolean.TRUE.equals(user.getCredentialsNonExpired()));
+            response.put("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : "");
+            response.put("lastLogin", user.getLastLogin() != null ? user.getLastLogin().toString() : null);
+            response.put("updatedAt", user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : "");
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             log.error("Error obteniendo usuario: {}", e.getMessage());
@@ -261,11 +267,11 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{username}")
-    public ResponseEntity<?> updateUser(@PathVariable String username,
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable String id,
                                         @RequestBody Map<String, String> userData) {
         try {
-            User existingUser = userService.getUserByUsername(username);
+            User existingUser = userService.getUserById(id);
 
             if (existingUser == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -304,10 +310,10 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{username}")
-    public ResponseEntity<?> deleteUser(@PathVariable String username) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable String id) {
         try {
-            User user = userService.getUserByUsername(username);
+            User user = userService.getUserById(id);
 
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -318,7 +324,7 @@ public class UserController {
 
             return ResponseEntity.ok(Map.of(
                     MESSAGE, "Usuario eliminado correctamente",
-                    USERNAME, username
+                    USERNAME, user.getUsername()
             ));
 
         } catch (Exception e) {

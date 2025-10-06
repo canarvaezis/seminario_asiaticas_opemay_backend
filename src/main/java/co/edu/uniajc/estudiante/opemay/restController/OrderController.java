@@ -37,6 +37,25 @@ public class OrderController {
 
     private final OrderService orderService;
     private final UserService userService;
+    
+    /**
+     * Método helper para obtener el usuario actual desde el Principal
+     * Ahora el JWT contiene el email en lugar del username
+     */
+    private User getCurrentUser(Principal principal) {
+        String email = principal.getName();
+        log.info("Obteniendo usuario para email: '{}'", email);
+        
+        User user = userService.getUserByEmail(email);
+        
+        if (user != null) {
+            log.info("Usuario encontrado: ID={}, Email={}", user.getId(), user.getEmail());
+        } else {
+            log.warn("No se encontró usuario para email: '{}'", email);
+        }
+        
+        return user;
+    }
 
     /**
      * Crear una nueva orden desde un carrito
@@ -48,33 +67,53 @@ public class OrderController {
             Principal principal) {
         
         try {
-            log.info("Usuario {} creando orden desde carrito {}", 
+            // ====== LOGGING DETALLADO DE ENTRADA ======
+            log.info("🔹 [ORDEN] ===== INICIO CREACIÓN DE ORDEN =====");
+            log.info("🔹 [ORDEN] Usuario {} creando orden desde carrito {}", 
                 principal.getName(), request.getCartId());
+            log.info("🔹 [ORDEN] Request completo: {}", request);
+            log.info("🔹 [ORDEN] CartId: '{}'", request.getCartId());
             
-            // Obtener el usuario autenticado
-            User currentUser = userService.getUserByEmail(principal.getName());
-            if (currentUser == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(java.util.Map.of("error", "Usuario no encontrado"));
-            }
+            // ====== CREACIÓN DE ORDEN DIRECTA ======
+            log.info("🔸 [ORDEN] Iniciando creación de orden directamente desde carrito...");
+            log.info("🔸 [ORDEN] El carrito contiene el userId, no necesitamos buscarlo por separado");
+            log.info("🔸 [ORDEN] Parámetros: cartId='{}', deliveryAddress='{}', paymentMethod='{}'", 
+                    request.getCartId(), request.getDeliveryAddress(), request.getPaymentMethod());
             
+            // El orderService.createOrderFromCart obtendrá el userId desde el carrito
             Order order = orderService.createOrderFromCart(
                 request.getCartId(),
-                currentUser.getId(),
-                request
+                request.getDeliveryAddress(),
+                request.getPaymentMethod()
             );
             
+            // ====== LOGGING RESULTADO ORDEN ======
+            if (order != null) {
+                log.info("✅ [ORDEN] Orden creada exitosamente:");
+                log.info("✅ [ORDEN] ID: {}", order.getId());
+                log.info("✅ [ORDEN] Total: {}", order.getTotalAmount());
+                log.info("✅ [ORDEN] Status: {}", order.getStatus());
+                log.info("✅ [ORDEN] Items count: {}", order.getItems() != null ? order.getItems().size() : "null");
+            } else {
+                log.error("❌ [ORDEN] La orden creada es null");
+            }
+            
+            log.info("🔹 [ORDEN] ===== FIN CREACIÓN DE ORDEN =====");
             return ResponseEntity.status(HttpStatus.CREATED).body(order);
             
         } catch (IllegalArgumentException e) {
-            log.warn("Error en validación al crear orden: {}", e.getMessage());
+            log.error("❌ [ERROR] Error en validación al crear orden: {}", e.getMessage(), e);
             return ResponseEntity.badRequest()
                 .body(java.util.Map.of("error", "Error: " + e.getMessage()));
             
         } catch (ExecutionException | InterruptedException e) {
-            log.error("Error al crear orden", e);
+            log.error("❌ [ERROR] Error al crear orden", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(java.util.Map.of("error", "Error interno del servidor"));
+        } catch (Exception e) {
+            log.error("❌ [ERROR] Error inesperado al crear orden", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Map.of("error", "Error inesperado: " + e.getMessage()));
         }
     }
 
@@ -89,7 +128,7 @@ public class OrderController {
         
         try {
             // Primero validar el usuario autenticado
-            User currentUser = userService.getUserByEmail(principal.getName());
+            User currentUser = getCurrentUser(principal);
             if (currentUser == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(java.util.Map.of("error", "Usuario no autenticado"));
@@ -124,15 +163,35 @@ public class OrderController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> getMyOrders(Principal principal) {
         try {
-            User currentUser = userService.getUserByEmail(principal.getName());
+            log.info("Obteniendo órdenes para usuario: {}", principal.getName());
+            log.info("Tipo de principal: {}", principal.getClass().getSimpleName());
+            
+            User currentUser = getCurrentUser(principal);
+            
+            if (currentUser == null) {
+                log.error("Usuario no encontrado: {}", principal.getName());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Usuario no encontrado");
+            }
+            
             List<Order> orders = orderService.getUserOrders(currentUser.getId());
             
+            log.info("Se encontraron {} órdenes para el usuario {}", orders.size(), principal.getName());
             return ResponseEntity.ok(orders);
             
-        } catch (ExecutionException | InterruptedException e) {
-            log.error("Error al obtener órdenes del usuario {}", principal.getName(), e);
+        } catch (ExecutionException e) {
+            log.error("Error de ejecución al obtener órdenes del usuario {}: {}", principal.getName(), e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno del servidor");
+                .body("Error interno del servidor - Execution");
+        } catch (InterruptedException e) {
+            log.error("Proceso interrumpido al obtener órdenes del usuario {}: {}", principal.getName(), e.getMessage(), e);
+            Thread.currentThread().interrupt();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error interno del servidor - Interrupted");
+        } catch (Exception e) {
+            log.error("Error inesperado al obtener órdenes del usuario {}: {}", principal.getName(), e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error interno del servidor - " + e.getClass().getSimpleName());
         }
     }
 
@@ -220,7 +279,12 @@ public class OrderController {
                 return ResponseEntity.notFound().build();
             }
 
-            User currentUser = userService.getUserByEmail(principal.getName());
+            User currentUser = getCurrentUser(principal);
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Usuario no autenticado");
+            }
+            
             if (!currentUser.getRoles().contains("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
                 throw new RuntimeException("No autorizado para cancelar esta orden");
             }

@@ -1,21 +1,24 @@
 package co.edu.uniajc.estudiante.opemay.Service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import com.google.cloud.Timestamp;
-
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.google.cloud.Timestamp;
 
 import co.edu.uniajc.estudiante.opemay.IRespository.CartRepository;
 import co.edu.uniajc.estudiante.opemay.IRespository.OrderRepository;
@@ -23,8 +26,8 @@ import co.edu.uniajc.estudiante.opemay.IRespository.ProductRepository;
 import co.edu.uniajc.estudiante.opemay.model.Cart;
 import co.edu.uniajc.estudiante.opemay.model.CartItem;
 import co.edu.uniajc.estudiante.opemay.model.Order;
-import co.edu.uniajc.estudiante.opemay.model.Product;
 import co.edu.uniajc.estudiante.opemay.model.OrderStatus;
+import co.edu.uniajc.estudiante.opemay.model.Product;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -209,7 +212,7 @@ class OrderServiceTest {
     @Test
     void testCancelOrder_CannotBeCancelled() throws ExecutionException, InterruptedException {
         // Given
-        testOrder.setStatus("DELIVERED");
+        testOrder.updateStatus("DELIVERED");
         when(orderRepository.getOrderById("order-123")).thenReturn(testOrder);
 
         // When & Then
@@ -224,14 +227,14 @@ class OrderServiceTest {
     void testGetOrderStats() throws ExecutionException, InterruptedException {
         // Given
         Order order1 = new Order();
-        order1.setStatus("PENDING");
+        order1.updateStatus("PENDING");
         
         Order order2 = new Order();
-        order2.setStatus("DELIVERED");
+        order2.updateStatus("DELIVERED");
         order2.setTotalAmount(100.0);
         
         Order order3 = new Order();
-        order3.setStatus("CANCELLED");
+        order3.updateStatus("CANCELLED");
         
         List<Order> orders = Arrays.asList(order1, order2, order3);
         when(orderRepository.getAllOrders()).thenReturn(orders);

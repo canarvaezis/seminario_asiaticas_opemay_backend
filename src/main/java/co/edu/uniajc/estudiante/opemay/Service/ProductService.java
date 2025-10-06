@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
@@ -47,6 +45,8 @@ public class ProductService {
     private static final String ERROR_FIREBASE_SAVE = "Error saving product in Firebase";
     private static final String ERROR_FIREBASE_RETRIEVE = "Error retrieving products from Firebase";
     private static final String ERROR_FIREBASE_GET_BY_ID = "Error retrieving product by ID";
+    private static final String ERROR_FIREBASE_UPDATE = "Error updating product in Firebase";
+    private static final String ERROR_FIREBASE_DELETE = "Error deleting product in Firebase";
     private static final String FALLBACK_NAME = "Producto no disponible temporalmente";
     private static final String FALLBACK_DESCRIPTION = "Servicio no disponible";
     private static final double FALLBACK_PRICE = 0.0;
@@ -364,6 +364,16 @@ public class ProductService {
         Double price = doc.getDouble(FIELD_PRICE);
         Boolean active = doc.getBoolean(FIELD_ACTIVE);
         
+        // Campos adicionales del producto
+        String categoryId = doc.getString("categoryId");
+        String categoryName = doc.getString("categoryName");
+        Long stockLong = doc.getLong("stock");
+        Integer stock = stockLong != null ? stockLong.intValue() : null;
+        String imageUrl = doc.getString("imageUrl");
+        String unit = doc.getString("unit");
+        Double weight = doc.getDouble("weight");
+        String origin = doc.getString("origin");
+        
         // Manejar conversión de timestamps de manera segura
         Timestamp createdAt = convertToTimestamp(doc.get(FIELD_CREATED_AT));
         Timestamp updatedAt = convertToTimestamp(doc.get(FIELD_UPDATED_AT));
@@ -374,6 +384,13 @@ public class ProductService {
                 .description(description)
                 .price(price != null ? price : FALLBACK_PRICE)
                 .active(active != null ? active : Boolean.TRUE)
+                .categoryId(categoryId)
+                .categoryName(categoryName)
+                .stock(stock)
+                .imageUrl(imageUrl)
+                .unit(unit)
+                .weight(weight)
+                .origin(origin)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -415,34 +432,107 @@ public class ProductService {
      */
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getProductsByCategoryFallback")
     public List<Product> getProductsByCategory(String categoryId) {
+        // ====== LOGGING DE ENTRADA ======
+        log.info("🔹 [ENTRADA] getProductsByCategory recibió:");
+        log.info("🔹 categoryId: '{}'", categoryId);
+        log.info("🔹 categoryId es null: {}", categoryId == null);
+        log.info("🔹 categoryId después de trim: '{}'", categoryId != null ? categoryId.trim() : "null");
+        
         if (categoryId == null || categoryId.trim().isEmpty()) {
+            log.error("❌ [ERROR] ID de categoría no puede estar vacío");
             throw new IllegalArgumentException("ID de categoría no puede estar vacío");
         }
         
         try {
-            log.info("Obteniendo productos para categoría: {}", categoryId);
+            log.info("🔸 [FIRESTORE] Ejecutando consulta para categoría: {}", categoryId);
+            log.info("🔸 [FIRESTORE] Consulta: collection('{}').whereEqualTo('categoryId', '{}').whereEqualTo('active', true)", 
+                    PRODUCTS_COLLECTION, categoryId);
             
+            // Consulta sin orderBy para evitar el índice compuesto
             ApiFuture<QuerySnapshot> future = firestore.collection(PRODUCTS_COLLECTION)
                     .whereEqualTo("categoryId", categoryId)
                     .whereEqualTo("active", true)
-                    .orderBy("name", Query.Direction.ASCENDING)
                     .get();
             
             List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            List<Product> products = documents.stream()
-                    .map(this::convertDocumentToProduct)
-                    .filter(product -> product != null)
-                    .collect(Collectors.toList());
             
-            log.info("Encontrados {} productos para categoría {}", products.size(), categoryId);
+            // ====== LOGGING DE DOCUMENTOS BRUTOS ======
+            log.info("🔸 [FIRESTORE] Documentos obtenidos de Firebase:");
+            log.info("🔸 [FIRESTORE] Número total de documentos: {}", documents.size());
+            
+            for (int i = 0; i < documents.size(); i++) {
+                QueryDocumentSnapshot doc = documents.get(i);
+                log.info("🔸 [DOCUMENTO {}] ID: {}", i + 1, doc.getId());
+                log.info("🔸 [DOCUMENTO {}] Datos: {}", i + 1, doc.getData());
+                log.info("🔸 [DOCUMENTO {}] categoryId: {}", i + 1, doc.getString("categoryId"));
+                log.info("🔸 [DOCUMENTO {}] name: {}", i + 1, doc.getString("name"));
+                log.info("🔸 [DOCUMENTO {}] active: {}", i + 1, doc.getBoolean("active"));
+                log.info("🔸 [DOCUMENTO {}] price: {}", i + 1, doc.getDouble("price"));
+            }
+            
+            // ====== CONVERSIÓN A PRODUCTOS ======
+            log.info("🔄 [CONVERSIÓN] Iniciando conversión de documentos a productos...");
+            List<Product> products = new ArrayList<>();
+            
+            for (int i = 0; i < documents.size(); i++) {
+                QueryDocumentSnapshot doc = documents.get(i);
+                log.info("🔄 [CONVERSIÓN] Procesando documento {}/{}: {}", i + 1, documents.size(), doc.getId());
+                
+                Product product = convertDocumentToProduct(doc);
+                if (product != null) {
+                    products.add(product);
+                    log.info("✅ [CONVERSIÓN] Producto {} convertido exitosamente:", i + 1);
+                    log.info("✅ [PRODUCTO {}] ID: {}", i + 1, product.getId());
+                    log.info("✅ [PRODUCTO {}] Name: {}", i + 1, product.getName());
+                    log.info("✅ [PRODUCTO {}] Price: {}", i + 1, product.getPrice());
+                    log.info("✅ [PRODUCTO {}] CategoryId: {}", i + 1, product.getCategoryId());
+                    log.info("✅ [PRODUCTO {}] Active: {}", i + 1, product.getActive());
+                    log.info("✅ [PRODUCTO {}] Stock: {}", i + 1, product.getStock());
+                    log.info("✅ [PRODUCTO {}] ImageUrl: {}", i + 1, product.getImageUrl());
+                } else {
+                    log.warn("⚠️ [CONVERSIÓN] Documento {} falló en conversión: {}", i + 1, doc.getId());
+                }
+            }
+            
+            // ====== ORDENACIÓN EN MEMORIA ======
+            log.info("🔄 [ORDENACIÓN] Ordenando productos por nombre...");
+            products.sort((p1, p2) -> {
+                if (p1.getName() == null && p2.getName() == null) return 0;
+                if (p1.getName() == null) return 1;
+                if (p2.getName() == null) return -1;
+                return p1.getName().compareToIgnoreCase(p2.getName());
+            });
+            log.info("✅ [ORDENACIÓN] Productos ordenados correctamente");
+            
+            // ====== LOGGING DE SALIDA ======
+            log.info("🔹 [SALIDA] getProductsByCategory está retornando:");
+            log.info("🔹 [SALIDA] Número total de productos: {}", products.size());
+            log.info("🔹 [SALIDA] Productos encontrados para categoría '{}': {}", categoryId, products.size());
+            
+            if (!products.isEmpty()) {
+                log.info("🔹 [SALIDA] Lista detallada de productos:");
+                for (int i = 0; i < products.size(); i++) {
+                    Product p = products.get(i);
+                    log.info("🔹 [SALIDA] Producto {}: [ID: {}, Name: '{}', Price: {}, Active: {}]", 
+                            i + 1, p.getId(), p.getName(), p.getPrice(), p.getActive());
+                }
+            } else {
+                log.warn("🔹 [SALIDA] ⚠️ No se encontraron productos para la categoría: {}", categoryId);
+            }
+            
             return products;
             
         } catch (InterruptedException e) {
-            log.error("Operación interrumpida obteniendo productos por categoría: {}", categoryId);
+            log.error("❌ [ERROR] Operación interrumpida obteniendo productos por categoría: {}", categoryId);
+            log.error("❌ [ERROR] InterruptedException details: {}", e.getMessage());
             Thread.currentThread().interrupt();
             throw new RuntimeException("Error obteniendo productos por categoría: " + categoryId, e);
         } catch (ExecutionException e) {
-            log.error("Error ejecutando consulta para categoría {}: {}", categoryId, e.getMessage());
+            log.error("❌ [ERROR] Error ejecutando consulta para categoría {}: {}", categoryId, e.getMessage());
+            log.error("❌ [ERROR] ExecutionException details: {}", e.getMessage());
+            if (e.getCause() != null) {
+                log.error("❌ [ERROR] Causa raíz: {}", e.getCause().getMessage());
+            }
             throw new RuntimeException("Error obteniendo productos por categoría: " + categoryId, e);
         }
     }
@@ -454,5 +544,158 @@ public class ProductService {
         log.warn("Fallback activado para getProductsByCategory con categoría: {}. Error: {}", 
                 categoryId, e.getMessage());
         return new ArrayList<>();
+    }
+
+    /**
+     * Actualiza un producto existente en Firestore con Circuit Breaker
+     * 
+     * @param id ID del producto a actualizar
+     * @param product producto con los nuevos datos
+     * @return producto actualizado
+     * @throws IllegalArgumentException si el ID o producto son inválidos
+     * @throws RuntimeException si hay error en la persistencia
+     */
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "updateProductFallback")
+    public Product updateProduct(String id, Product product) {
+        validateProductId(id);
+        validateProduct(product);
+        
+        try {
+            log.info("Actualizando producto con ID: {}", id);
+            
+            // Verificar que el producto existe
+            Product existingProduct = getProductById(id);
+            if (existingProduct == null) {
+                throw new IllegalArgumentException("Producto no encontrado con ID: " + id);
+            }
+            
+            // Mantener ID y timestamps del producto existente
+            product.setId(id);
+            product.setCreatedAt(existingProduct.getCreatedAt());
+            product.setUpdatedAt(Timestamp.now());
+            
+            ApiFuture<WriteResult> future = firestore.collection(PRODUCTS_COLLECTION)
+                    .document(id)
+                    .set(product);
+
+            WriteResult result = future.get();
+            log.info("Producto actualizado en: {}", result.getUpdateTime());
+            return product;
+            
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Proceso interrumpido actualizando producto: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_UPDATE, e);
+        } catch (ExecutionException e) {
+            log.error("Error ejecutando operación de actualización en Firebase: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_UPDATE, e);
+        }
+    }
+
+    /**
+     * Fallback para updateProduct
+     */
+    public Product updateProductFallback(String id, Product product, Exception e) {
+        log.warn("Fallback activado para updateProduct con ID: {}. Error: {}", id, e.getMessage());
+        return Product.builder()
+                .id(id)
+                .name("Error actualizando producto")
+                .description("Servicio no disponible")
+                .price(0.0)
+                .active(false)
+                .updatedAt(Timestamp.now())
+                .build();
+    }
+
+    /**
+     * Elimina un producto (soft delete) marcándolo como inactivo
+     * 
+     * @param id ID del producto a eliminar
+     * @return true si se eliminó correctamente
+     * @throws IllegalArgumentException si el ID es inválido
+     * @throws RuntimeException si hay error en la operación
+     */
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "deleteProductFallback")
+    public boolean deleteProduct(String id) {
+        validateProductId(id);
+        
+        try {
+            log.info("Eliminando producto con ID: {}", id);
+            
+            // Verificar que el producto existe
+            Product existingProduct = getProductById(id);
+            if (existingProduct == null) {
+                throw new IllegalArgumentException("Producto no encontrado con ID: " + id);
+            }
+            
+            // Soft delete: marcar como inactivo
+            existingProduct.setActive(false);
+            existingProduct.setUpdatedAt(Timestamp.now());
+            
+            ApiFuture<WriteResult> future = firestore.collection(PRODUCTS_COLLECTION)
+                    .document(id)
+                    .set(existingProduct);
+
+            WriteResult result = future.get();
+            log.info("Producto eliminado (soft delete) en: {}", result.getUpdateTime());
+            return true;
+            
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Proceso interrumpido eliminando producto: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_DELETE, e);
+        } catch (ExecutionException e) {
+            log.error("Error ejecutando operación de eliminación en Firebase: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_DELETE, e);
+        }
+    }
+
+    /**
+     * Fallback para deleteProduct
+     */
+    public boolean deleteProductFallback(String id, Exception e) {
+        log.warn("Fallback activado para deleteProduct con ID: {}. Error: {}", id, e.getMessage());
+        return false;
+    }
+
+    /**
+     * Elimina un producto permanentemente de Firestore
+     * 
+     * @param id ID del producto a eliminar permanentemente
+     * @return true si se eliminó correctamente
+     * @throws IllegalArgumentException si el ID es inválido
+     * @throws RuntimeException si hay error en la operación
+     */
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "hardDeleteProductFallback")
+    public boolean hardDeleteProduct(String id) {
+        validateProductId(id);
+        
+        try {
+            log.info("Eliminando permanentemente producto con ID: {}", id);
+            
+            ApiFuture<WriteResult> future = firestore.collection(PRODUCTS_COLLECTION)
+                    .document(id)
+                    .delete();
+
+            WriteResult result = future.get();
+            log.info("Producto eliminado permanentemente en: {}", result.getUpdateTime());
+            return true;
+            
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Proceso interrumpido eliminando permanentemente producto: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_DELETE, e);
+        } catch (ExecutionException e) {
+            log.error("Error ejecutando eliminación permanente en Firebase: {}", e.getMessage());
+            throw new RuntimeException(ERROR_FIREBASE_DELETE, e);
+        }
+    }
+
+    /**
+     * Fallback para hardDeleteProduct
+     */
+    public boolean hardDeleteProductFallback(String id, Exception e) {
+        log.warn("Fallback activado para hardDeleteProduct con ID: {}. Error: {}", id, e.getMessage());
+        return false;
     }
 }

@@ -40,6 +40,17 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateTokenFromEmail(String email) {
+        Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationMs);
+        
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date())
+                .expiration(expiryDate)
+                .signWith(getSigningKey())
+                .compact();
+    }
+
     // Alias para compatibilidad con tests
     public String generateToken(String username) {
         return generateTokenFromUsername(username);

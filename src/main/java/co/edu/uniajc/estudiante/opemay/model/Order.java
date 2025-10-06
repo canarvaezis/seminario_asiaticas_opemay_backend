@@ -42,9 +42,6 @@ public class Order {
     
     // Información de entrega
     private String deliveryAddress;
-    private String deliveryCity;
-    private String deliveryPhone;
-    private String deliveryInstructions;
     
     // Información de pago
     private String paymentMethod; // CASH, CARD, TRANSFER
@@ -118,17 +115,12 @@ public class Order {
         this.status = newStatus;
         this.updatedAt = Timestamp.now();
     }
-    
-    /**
-     * Actualiza el estado de la orden con String
-     */
-    public void setStatus(String newStatus) {
-        this.status = OrderStatus.valueOf(newStatus);
-        this.updatedAt = Timestamp.now();
-    }
 
+    /**
+     * Actualiza el estado de la orden desde String
+     */
     public void updateStatus(String newStatus) {
-        setStatus(newStatus);
+        setStatus(OrderStatus.valueOf(newStatus));
         this.updatedAt = Timestamp.now();
     }
 

@@ -44,6 +44,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll() // Permitir registro sin auth
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Solo GET permitido sin auth
+                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // Categorías públicas
+                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // Categorías públicas
                 // Swagger UI endpoints
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
@@ -63,8 +65,14 @@ public class SecurityConfig {
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
 
-        configuration.addAllowedOrigin("http://localhost:51346"); 
- 
+        // Orígenes permitidos para desarrollo
+        configuration.addAllowedOrigin("http://localhost:59679");      // VS Code Live Server principal
+        configuration.addAllowedOrigin("http://127.0.0.1:5500");       // Live Server alternativo
+        configuration.addAllowedOrigin("http://localhost:5500");       // Live Server localhost
+        configuration.addAllowedOrigin("http://localhost:3000");       // React/Node.js
+        configuration.addAllowedOrigin("http://localhost:8080");       // Spring Boot
+        configuration.addAllowedOrigin("http://localhost:8081");       // Cliente alternativo
+        configuration.addAllowedOrigin("http://127.0.0.1:8081");       // Cliente 127.0.0.1
         
         // Permitir todos los métodos HTTP
         configuration.addAllowedMethod("GET");

@@ -84,9 +84,16 @@ public class UserService {
 
     public User getUserByEmail(String email) {
         try {
-            return userRepository.getUserByEmail(email);
+            log.info("Buscando usuario por email: '{}'", email);
+            User user = userRepository.getUserByEmail(email);
+            if (user != null) {
+                log.info("Usuario encontrado: ID={}, Email={}", user.getId(), user.getEmail());
+            } else {
+                log.warn("No se encontró usuario con email: '{}'", email);
+            }
+            return user;
         } catch (ExecutionException | InterruptedException e) {
-            log.error("Error obteniendo usuario por email: {}", e.getMessage());
+            log.error("Error obteniendo usuario por email '{}': {}", email, e.getMessage(), e);
             return null;
         }
     }
