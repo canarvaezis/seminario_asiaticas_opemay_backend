@@ -2,7 +2,8 @@ name: CI/CD - OpeMay Backend (Gradle + Docker + AWS EC2)
 
 on:
   push:
-    branches: [ master ] 
+    branches: [ master ]
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -43,9 +44,23 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "🚀 Desplegando nueva versión..."
+            echo "🚀 Desplegando nueva versión en EC2..."
+
+            # Descargar última imagen
             docker pull canarvaezis/seminario_asiaticas_opemay_backend:latest
-            docker stop opemay_backend || true
-            docker rm opemay_backend || true
+
+            # Detener y eliminar contenedor previo si existe
+            docker stop seminario_backend || true
+            docker rm seminario_backend || true
+
+            # Limpiar imágenes viejas
             docker image prune -f
-            docker run -d --restart always --name opemay_backend -p 80:8080 canarvaezis/seminario_asiaticas_opemay_backend:latest
+
+            # Ejecutar nuevo contenedor con las variables y volumen necesarios
+            docker run -d \
+              --name seminario_backend \
+              --restart always \
+              -e FIREBASE_KEY_PATH=/home/ec2-user/secrets/firebase-key.json \
+              -v /home/ec2-user/secrets/firebase-key.json:/home/ec2-user/secrets/firebase-key.json \
+              -p 80:8080 \
+              canarvaezis/seminario_asiaticas_opemay_backend:latest
