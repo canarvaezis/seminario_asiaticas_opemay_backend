@@ -57,7 +57,10 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                 "token", jwt,
                 "type", "Bearer",
-                "email", user.getEmail()
+                "email", user.getEmail(),
+                "roles", user.getRoles(),
+                "userId", user.getId(),
+                "username", user.getUsername()
             ));
             
         } catch (Exception e) {
@@ -85,13 +88,24 @@ public class AuthController {
                     .body(Map.of("error", "Token expirado o inválido"));
             }
 
-            String username = jwtService.getUsernameFromToken(token);
-            String newToken = jwtService.generateTokenFromUsername(username);
+            // Ahora el token contiene email, no username
+            String email = jwtService.getUsernameFromToken(token); // Método devuelve el subject (ahora email)
+            User user = userService.getUserByEmail(email);
+            
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Usuario no encontrado"));
+            }
+            
+            String newToken = jwtService.generateTokenFromEmail(user.getEmail());
             
             return ResponseEntity.ok(Map.of(
                 "token", newToken,
                 "type", "Bearer",
-                "username", username
+                "email", user.getEmail(),
+                "roles", user.getRoles(),
+                "userId", user.getId(),
+                "username", user.getUsername()
             ));
             
         } catch (Exception e) {
@@ -110,14 +124,15 @@ public class AuthController {
             }
 
             String token = authHeader.substring(7);
-            String username = jwtService.getUsernameFromToken(token);
+            String email = jwtService.getUsernameFromToken(token); // Ahora devuelve email
             
-            User user = userService.getUserByUsername(username);
+            User user = userService.getUserByEmail(email);
             if (user == null) {
                 return ResponseEntity.notFound().build();
             }
             
             return ResponseEntity.ok(Map.of(
+                "userId", user.getId(),
                 "username", user.getUsername(),
                 "email", user.getEmail(),
                 "roles", user.getRoles(),
