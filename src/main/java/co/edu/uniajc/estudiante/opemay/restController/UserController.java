@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
         - **Protegido**: Todos los demás endpoints requieren JWT
         """
 )
-public class UserController {
+public class UserController { 
 
     // 🔹 Constantes para evitar duplicar literales
     private static final String USERNAME = "username";
