@@ -287,6 +287,15 @@ public class UserController {
             if (userData.containsKey(EMAIL)) {
                 existingUser.setEmail(userData.get(EMAIL));
             }
+            
+            // Permitir actualizar roles
+            if (userData.containsKey("roles")) {
+                String rolesStr = userData.get("roles");
+                if (rolesStr != null && !rolesStr.trim().isEmpty()) {
+                    List<String> roles = Arrays.asList(rolesStr.split(","));
+                    existingUser.setRoles(roles);
+                }
+            }
 
             existingUser.setUpdatedAt(Timestamp.now());
 
@@ -299,6 +308,7 @@ public class UserController {
                             EMAIL, updatedUser.getEmail(),
                             FIRST_NAME, updatedUser.getFirstName(),
                             LAST_NAME, updatedUser.getLastName(),
+                            "roles", updatedUser.getRoles(),
                             "id", updatedUser.getId()
                     )
             ));

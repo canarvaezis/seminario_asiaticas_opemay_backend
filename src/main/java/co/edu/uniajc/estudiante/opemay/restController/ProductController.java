@@ -31,6 +31,7 @@ public class ProductController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> saveProduct(@RequestBody Product product) {
         try {
             log.info("Recibida petición para guardar producto: {}", product.getName());

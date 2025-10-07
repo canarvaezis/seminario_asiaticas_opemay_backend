@@ -1,5 +1,6 @@
 package co.edu.uniajc.estudiante.opemay.restController;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -57,7 +58,9 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                 "token", jwt,
                 "type", "Bearer",
-                "email", user.getEmail()
+                "email", user.getEmail(),
+                "roles", user.getRoles() != null ? user.getRoles() : List.of("USER"),
+                "username", user.getUsername() != null ? user.getUsername() : ""
             ));
             
         } catch (Exception e) {
@@ -128,6 +131,48 @@ public class AuthController {
             log.error("Error al obtener usuario actual: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "Token inválido"));
+        }
+    }
+
+    /**
+     * Endpoint temporal para desarrollo - actualizar roles de usuario
+     * SOLO PARA TESTING - NO USAR EN PRODUCCIÓN
+     */
+    @PostMapping("/dev/update-roles")
+    public ResponseEntity<?> updateUserRoles(@RequestBody Map<String, Object> request) {
+        try {
+            String email = (String) request.get("email");
+            @SuppressWarnings("unchecked")
+            List<String> roles = (List<String>) request.get("roles");
+            
+            if (email == null || roles == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Email y roles son requeridos"));
+            }
+            
+            // Buscar usuario
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Usuario no encontrado"));
+            }
+            
+            // Actualizar roles
+            user.setRoles(roles);
+            userService.updateUser(user);
+            
+            log.info("Roles actualizados para usuario {}: {}", email, roles);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Roles actualizados exitosamente",
+                "email", email,
+                "roles", roles
+            ));
+            
+        } catch (Exception e) {
+            log.error("Error al actualizar roles: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error interno del servidor"));
         }
     }
 }

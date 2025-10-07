@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,12 +20,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.uniajc.estudiante.opemay.Service.OrderService;
-import co.edu.uniajc.estudiante.opemay.Service.UserService;
 import co.edu.uniajc.estudiante.opemay.dto.CreateOrderRequest;
 import co.edu.uniajc.estudiante.opemay.dto.UpdateOrderStatusRequest;
 import co.edu.uniajc.estudiante.opemay.dto.UpdatePaymentStatusRequest;
 import co.edu.uniajc.estudiante.opemay.model.Order;
-import co.edu.uniajc.estudiante.opemay.model.User;
+import co.edu.uniajc.estudiante.opemay.security.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,25 +37,30 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderController {
 
     private final OrderService orderService;
-    private final UserService userService;
     
     /**
-     * Método helper para obtener el usuario actual desde el Principal
-     * Ahora el JWT contiene el email en lugar del username
+     * Método helper para obtener el usuario actual desde el SecurityContext
+     * Obtiene directamente el UserPrincipal sin necesidad de buscar en la base de datos
      */
-    private User getCurrentUser(Principal principal) {
-        String email = principal.getName();
-        log.info("Obteniendo usuario para email: '{}'", email);
-        
-        User user = userService.getUserByEmail(email);
-        
-        if (user != null) {
-            log.info("Usuario encontrado: ID={}, Email={}", user.getId(), user.getEmail());
-        } else {
-            log.warn("No se encontró usuario para email: '{}'", email);
-        }
-        
-        return user;
+    private UserPrincipal getCurrentUserPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (UserPrincipal) authentication.getPrincipal();
+    }
+    
+    /**
+     * Método helper para obtener el ID del usuario actual
+     */
+    private String getCurrentUserId() {
+        return getCurrentUserPrincipal().getId();
+    }
+
+    /**
+     * Método helper para verificar si el usuario actual es admin
+     */
+    private boolean isCurrentUserAdmin() {
+        UserPrincipal userPrincipal = getCurrentUserPrincipal();
+        return userPrincipal.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
     }
 
     /**
@@ -127,12 +133,10 @@ public class OrderController {
             Principal principal) {
         
         try {
-            // Primero validar el usuario autenticado
-            User currentUser = getCurrentUser(principal);
-            if (currentUser == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(java.util.Map.of("error", "Usuario no autenticado"));
-            }
+            // Obtener información del usuario autenticado desde SecurityContext
+            UserPrincipal currentUserPrincipal = getCurrentUserPrincipal();
+            String currentUserId = currentUserPrincipal.getId();
+            boolean isAdmin = isCurrentUserAdmin();
             
             Order order = orderService.getOrderById(orderId);
             
@@ -142,7 +146,7 @@ public class OrderController {
             }
 
             // Los usuarios solo pueden ver sus propias órdenes, los admin pueden ver todas
-            if (!currentUser.getRoles().contains("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
+            if (!isAdmin && !order.getUserId().equals(currentUserId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(java.util.Map.of("error", "No autorizado para ver esta orden"));
             }
@@ -161,35 +165,31 @@ public class OrderController {
      */
     @GetMapping("/my-orders")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<?> getMyOrders(Principal principal) {
+    public ResponseEntity<?> getMyOrders() {
+        // Obtener información del usuario autenticado desde SecurityContext
+        UserPrincipal currentUserPrincipal = getCurrentUserPrincipal();
+        String currentUserId = currentUserPrincipal.getId();
+        String currentUserEmail = currentUserPrincipal.getEmail();
+        
         try {
-            log.info("Obteniendo órdenes para usuario: {}", principal.getName());
-            log.info("Tipo de principal: {}", principal.getClass().getSimpleName());
+            log.info("Obteniendo órdenes para usuario: {}", currentUserEmail);
             
-            User currentUser = getCurrentUser(principal);
+            List<Order> orders = orderService.getUserOrders(currentUserId);
             
-            if (currentUser == null) {
-                log.error("Usuario no encontrado: {}", principal.getName());
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario no encontrado");
-            }
-            
-            List<Order> orders = orderService.getUserOrders(currentUser.getId());
-            
-            log.info("Se encontraron {} órdenes para el usuario {}", orders.size(), principal.getName());
+            log.info("Se encontraron {} órdenes para el usuario {}", orders.size(), currentUserEmail);
             return ResponseEntity.ok(orders);
             
         } catch (ExecutionException e) {
-            log.error("Error de ejecución al obtener órdenes del usuario {}: {}", principal.getName(), e.getMessage(), e);
+            log.error("Error de ejecución al obtener órdenes del usuario {}: {}", currentUserEmail, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error interno del servidor - Execution");
         } catch (InterruptedException e) {
-            log.error("Proceso interrumpido al obtener órdenes del usuario {}: {}", principal.getName(), e.getMessage(), e);
+            log.error("Proceso interrumpido al obtener órdenes del usuario {}: {}", currentUserEmail, e.getMessage(), e);
             Thread.currentThread().interrupt();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error interno del servidor - Interrupted");
         } catch (Exception e) {
-            log.error("Error inesperado al obtener órdenes del usuario {}: {}", principal.getName(), e.getMessage(), e);
+            log.error("Error inesperado al obtener órdenes del usuario {}: {}", currentUserEmail, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error interno del servidor - " + e.getClass().getSimpleName());
         }
@@ -279,13 +279,12 @@ public class OrderController {
                 return ResponseEntity.notFound().build();
             }
 
-            User currentUser = getCurrentUser(principal);
-            if (currentUser == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Usuario no autenticado");
-            }
+            // Obtener información del usuario autenticado desde SecurityContext
+            UserPrincipal currentUserPrincipal = getCurrentUserPrincipal();
+            String currentUserId = currentUserPrincipal.getId();
+            boolean isAdmin = isCurrentUserAdmin();
             
-            if (!currentUser.getRoles().contains("ADMIN") && !order.getUserId().equals(currentUser.getId())) {
+            if (!isAdmin && !order.getUserId().equals(currentUserId)) {
                 throw new RuntimeException("No autorizado para cancelar esta orden");
             }
 
