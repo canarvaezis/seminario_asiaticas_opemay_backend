@@ -16,11 +16,17 @@ public class CustomUserDetailsService implements UserDetailsService {
     private UserService userService;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userService.getUserByUsername(username);
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        // Primero intentar buscar por email (que es lo que viene del JWT)
+        User user = userService.getUserByEmail(usernameOrEmail);
+        
+        // Si no se encuentra por email, intentar por username
+        if (user == null) {
+            user = userService.getUserByUsername(usernameOrEmail);
+        }
         
         if (user == null) {
-            throw new UsernameNotFoundException("Usuario no encontrado: " + username);
+            throw new UsernameNotFoundException("Usuario no encontrado: " + usernameOrEmail);
         }
 
         // Retornar UserPrincipal en lugar de User estándar
